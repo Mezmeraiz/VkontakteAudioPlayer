@@ -1,40 +1,52 @@
 package com.mezmeraiz.vkontakteaudioplayer.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.widget.FrameLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
+import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
+import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
-import com.vk.sdk.util.VKUtil;
-
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String START_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.START_SERVICE_ACTION";//Action для запуска сервиса
-    public static final String DESTROY_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.DESTROY_SERVICE_ACTION";
-    public static final String NEW_TASK_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.NEW_TASK_SERVICE_ACTION";
+    public static final String DESTROY_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.DESTROY_SERVICE_ACTION";//Broadcast на уничтожение сервиса
+    public static final String NEW_TASK_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.NEW_TASK_SERVICE_ACTION";//Сигнал из фрагмента о нажатии на новую композицию
+    public static final String FAB_PRESSED_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_SERVICE_ACTION";//Сигнал в сервис о нажатии на fab
+    public static final String SEEKBAR_PRESSED_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PRESSED_SERVICE_ACTION";//Сигнал в сервис о нажатии на SeekBar
+    public static final String REQUEST_DATA_FROM_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.REQUEST_DATA_FROM_SERVICE_ACTION";//Сигнал в сервис на запрос данных(отсылается после повторного открытия MainActivity)
 
+    private ViewPager mViewPager;
+    private ViewPagerAdapter mViewPagerAdapter;
+    private TabLayout mTabLayout;
+    private BroadcastReceiver mBroadcastReceiver;
+    private TextView mSongTextView, mBandTextView;
+    private SeekBar mSeekBar;
+    private Toolbar mToolbar;
+    private FrameLayout mTopFrameLayout, mBottomFrameLayout;
+    private FloatingActionButton mFloatingActionButton;
+    private boolean isStarted;// Становится true При первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
 
-
-
-
-
-    ViewPager mViewPager;
-    ViewPagerAdapter mViewPagerAdapter;
-    TabLayout mTabLayout;
 
 
 
@@ -42,25 +54,70 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
-        Log.d("myLogs", fingerprints[0]);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        sendBroadcastRequestData();
+        mSongTextView = (TextView) findViewById(R.id.songTextView);
+        mBandTextView = (TextView) findViewById(R.id.bandTextView);
+        mSeekBar = (SeekBar) findViewById(R.id.seekbar);
+        mTopFrameLayout = (FrameLayout) findViewById(R.id.top_frame_layout);
+        mBottomFrameLayout = (FrameLayout) findViewById(R.id.bottom_frame_layout);
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mFloatingActionButton.setTranslationY(300);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar.setTitle("Мои аудиозаписи");
+        setSupportActionBar(mToolbar);
         setViewPager();
         setTabLayout();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                sendBroadcastFabPressed();
             }
         });
-        startService(new Intent(START_SERVICE_ACTION));
 
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser)
+                    sendBroadcastSeekBarPressed(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.getAction().equals(Player.START_PLAYING_ACTION))
+                    onReceiveStartPlaying(intent);
+                else if(intent.getAction().equals(Player.FAB_PRESSED_BACK_ACTION))
+                    onReceivePressedBack(intent);
+                else if(intent.getAction().equals(Player.SEEKBAR_PROGRESS_ACTION))
+                    onReceiveSeekBarProgress(intent);
+                else if(intent.getAction().equals(Player.SEEKBAR_BUFFERING_ACTION))
+                    onReceiveSeekBarBuffering(intent);
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Player.START_PLAYING_ACTION);
+        intentFilter.addAction(Player.FAB_PRESSED_BACK_ACTION);
+        intentFilter.addAction(Player.SEEKBAR_PROGRESS_ACTION);
+        intentFilter.addAction(Player.SEEKBAR_BUFFERING_ACTION);
+        registerReceiver(mBroadcastReceiver, intentFilter);
+        startService(new Intent(START_SERVICE_ACTION));
     }
 
-    public void setViewPager(){
+
+
+    private void setViewPager(){
         ArrayList<Fragment> fragmentList = new ArrayList<Fragment>();
         fragmentList.add(new AudioFragment());
         fragmentList.add(new SaveFragment());
@@ -73,9 +130,35 @@ public class MainActivity extends AppCompatActivity {
         mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), this);
         mViewPagerAdapter.setFragmentList(fragmentList, iconList);
         mViewPager.setAdapter(mViewPagerAdapter);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                switch (position) {
+                    case AudioHolder.AUDIO_FRAGMENT:
+                        mToolbar.setTitle("Мои аудиозаписи");
+                        break;
+                    case AudioHolder.SAVED_FRAGMENT:
+                        mToolbar.setTitle("Сохраненные");
+                        break;
+                    case AudioHolder.SEARCH_FRAGMENT:
+                        mToolbar.setTitle("Поиск");
+                        break;
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
-    public void setTabLayout(){
+    private void setTabLayout(){
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
         mTabLayout.setupWithViewPager(mViewPager);
         mTabLayout.setTabMode(TabLayout.MODE_FIXED);
@@ -83,6 +166,69 @@ public class MainActivity extends AppCompatActivity {
             TabLayout.Tab tab = mTabLayout.getTabAt(i);
             tab.setCustomView(mViewPagerAdapter.getTabView(i));
         }
+    }
+
+
+    private void changeFabIcon(boolean fabState){
+        if(fabState){
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause24));
+        }else{
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play24));
+        }
+    }
+
+    private void onReceiveStartPlaying(Intent intent){
+        // По сигналу из сервиса о новой композиции заполняем view
+        List<Map<String, String>> currentList = AudioHolder.getInstance().getList(intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0));
+        mSongTextView.setText(currentList.get(intent.getIntExtra(Player.POSITION_KEY, 0)).get(AudioHolder.TITLE));
+        mBandTextView.setText(currentList.get(intent.getIntExtra(Player.POSITION_KEY, 0)).get(AudioHolder.ARTIST));
+        mSeekBar.setMax(intent.getIntExtra(Player.DURATION_KEY, 0));
+        mSeekBar.setProgress(intent.getIntExtra(Player.PROGRESS_KEY, 0));
+        mSeekBar.setSecondaryProgress(0);
+        if(intent.getBooleanExtra(Player.PLAY_STATE_KEY, true)){
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause24));
+        }else{
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play24));
+        }
+        if(!isStarted)
+            mFloatingActionButton.setTranslationY(mTopFrameLayout.getTranslationY());
+        isStarted = true;
+        mFloatingActionButton.setVisibility(View.VISIBLE);
+        mTopFrameLayout.setVisibility(View.VISIBLE);
+        mBottomFrameLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void onReceivePressedBack(Intent intent) {
+        // Добро от сервиса на переключение иконки fab
+        changeFabIcon(intent.getBooleanExtra(Player.FAB_STATE_KEY, false));
+    }
+
+    private void onReceiveSeekBarProgress(Intent intent) {
+        // Данные от сервиса о прогрессе seekBar каждую секунду
+        mSeekBar.setProgress(intent.getIntExtra(Player.SEEKBAR_PROGRESS_KEY, 0));
+    }
+
+    private void onReceiveSeekBarBuffering(Intent intent){
+        // Данные от сервиса о буферизации
+        int secondaryProgress = mSeekBar.getMax() * intent.getIntExtra(Player.SEEKBAR_BUFFERING_KEY, 0) / 100;
+        mSeekBar.setSecondaryProgress(secondaryProgress);
+    }
+
+    private void sendBroadcastFabPressed() {
+        // Сигнал в сервис о нажатии на fab
+        sendBroadcast(new Intent(FAB_PRESSED_SERVICE_ACTION));
+    }
+
+    private void sendBroadcastSeekBarPressed(int progress){
+        //  Сигнал в сервис о нажатии на SeekBar
+        Intent intent = new Intent(SEEKBAR_PRESSED_SERVICE_ACTION);
+        intent.putExtra(PlayService.SEEKBAR_PRESSED_KEY, progress);
+        sendBroadcast(intent);
+    }
+
+    private void sendBroadcastRequestData(){
+        // Запрос данных о текущей композиции из сервиса
+        sendBroadcast(new Intent(REQUEST_DATA_FROM_SERVICE_ACTION));
     }
 
     @Override
@@ -106,9 +252,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         sendBroadcast(new Intent(DESTROY_SERVICE_ACTION));
+        unregisterReceiver(mBroadcastReceiver);
     }
 
-    public void logout() {
+    private void logout() {
         VKSdk.logout();
         startActivity(new Intent(this, LoginActivity.class));
         finish();
@@ -117,6 +264,5 @@ public class MainActivity extends AppCompatActivity {
     public int getCurrentFragment(){
         return mViewPager.getCurrentItem();
     }
-
 
 }

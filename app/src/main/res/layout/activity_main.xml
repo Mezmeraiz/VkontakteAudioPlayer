@@ -61,26 +61,32 @@
         android:layout_height="?attr/actionBarSize"
         android:background="#607D8B"
         android:layout_gravity="center_horizontal|bottom"
-        android:id="@+id/top_frame_layout">
+        android:id="@+id/top_frame_layout"
+        android:visibility="invisible">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="visible">
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="16dp"
                 android:text="Empty Eyes"
                 android:textColor="#fff"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:gravity="bottom" />
+                android:gravity="center|bottom"
+                android:id="@+id/songTextView"
+                android:layout_marginTop="20dp" />
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Within Temptation"
                 android:textColor="#CFD8DC"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:id="@+id/bandTextView"
+                android:gravity="center" />
         </LinearLayout>
 
     </FrameLayout>
@@ -89,13 +95,16 @@
         android:background="#607D8B"
         android:layout_width="match_parent"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_height="?attr/actionBarSize">
+        android:layout_height="?attr/actionBarSize"
+        android:visibility="invisible"
+        android:id="@+id/bottom_frame_layout">
         <SeekBar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp" />
+            android:layout_marginRight="16dp"
+            android:id="@+id/seekbar" />
     </FrameLayout>
 
     <android.support.design.widget.FloatingActionButton
@@ -106,8 +115,8 @@
         android:layout_gravity="end|bottom"
         android:layout_marginBottom="68dp"
         app:fabSize="normal"
-        android:src="@drawable/play36"
-        />
+        android:src="@drawable/play24"
+        android:visibility="invisible" />
 
 
 

@@ -16,14 +16,15 @@
              >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
 
-        <activity android:name=".ui.MainActivity"/>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".ui.MainActivity"/>
 
         <service android:name=".services.PlayService">
             <intent-filter>

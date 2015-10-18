@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 /**
- * Created by pc on 14.10.2015.
+ * Behavior для FrameLayout с названием композиции
  */
 public class SongBehavior extends CoordinatorLayout.Behavior<FrameLayout> {
 
@@ -37,13 +37,6 @@ public class SongBehavior extends CoordinatorLayout.Behavior<FrameLayout> {
         }
 
     }
-
-
-
-
-
-
-
 
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, FrameLayout child, View dependency) {

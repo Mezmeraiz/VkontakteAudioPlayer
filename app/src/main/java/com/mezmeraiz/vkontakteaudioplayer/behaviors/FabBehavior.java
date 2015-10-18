@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 /**
- * Created by pc on 14.10.2015.
+ * Behavior для fab
  */
 public class FabBehavior  extends CoordinatorLayout.Behavior<FloatingActionButton>{
 

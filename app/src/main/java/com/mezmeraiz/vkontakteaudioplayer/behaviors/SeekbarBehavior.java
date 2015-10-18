@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 /**
- * Created by pc on 14.10.2015.
+ * Behavior для FrameLayout с SeekBar
  */
 public class SeekbarBehavior extends CoordinatorLayout.Behavior<FrameLayout>  {
 

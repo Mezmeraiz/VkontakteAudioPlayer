@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by pc on 14.10.2015.
+ * Класс для хранения текущих списков аудиозаписей
  */
 public class AudioHolder {
 
@@ -13,6 +13,7 @@ public class AudioHolder {
     public final static String TITLE = "title";
     public final static String ARTIST = "artist";
     public final static String URL = "url";
+    public final static String DURATION = "duration";
     public final static int AUDIO_FRAGMENT = 0;
     public final static int SAVED_FRAGMENT = 1;
     public final static int SEARCH_FRAGMENT = 2;
@@ -26,6 +27,7 @@ public class AudioHolder {
     private AudioHolder(){};
 
     public static AudioHolder getInstance(){
+
         if(instance == null){
             synchronized (AudioHolder.class){
                 if(instance == null){
@@ -36,20 +38,18 @@ public class AudioHolder {
         return instance;
     }
 
-
-
-    public void setAudioList(LinkedList<Map<String, String>> audioList) {
-        audioList = mAudioList;
-    }
-
-
-    public void setSavedList(LinkedList<Map<String, String>> savedList) {
-        mSavedList = savedList;
-    }
-
-
-    public void setSearchList(LinkedList<Map<String, String>> searchList) {
-        mSearchList = searchList;
+    public void setList(List list, int currentFragment){
+        switch (currentFragment){
+            case AUDIO_FRAGMENT:
+                mAudioList = (LinkedList<Map<String, String>>) list;
+                break;
+            case SAVED_FRAGMENT:
+                mSavedList = (LinkedList<Map<String, String>>) list;
+                break;
+            case SEARCH_FRAGMENT:
+                mSearchList = (LinkedList<Map<String, String>>) list;
+                break;
+        }
     }
 
     public List getList(int currentFragment){

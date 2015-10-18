@@ -1,26 +1,25 @@
 package com.mezmeraiz.vkontakteaudioplayer.adapters;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by pc on 14.10.2015.
+ * Адаптер для RecycleView
  */
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder>{
 
@@ -28,10 +27,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public final static String CURRENT_FRAGMENT = "CURRENT_FRAGMENT";
 
     private List<Map<String,String>> mAudioList;
+    private int[] mColorList;
     private MainActivity mActivity;
+    private int mPressedPosition;
 
     public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity) {
         mAudioList = itemList;
+        mColorList = new int[mAudioList.size()];
+        Arrays.fill(mColorList, Color.parseColor("#FFFAFAFA"));
         mActivity = (MainActivity) activity;
     }
 
@@ -41,8 +44,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return new RecyclerViewHolder(view);
     }
 
-
-
     @Override
     public void onBindViewHolder(RecyclerViewHolder viewHolder, int i) {
         final int position = i;
@@ -50,7 +51,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         FrameLayout pressMenuFrameLayout = viewHolder.mPressMenuFrameLayout;
         pressPlayFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v) {// Отправка broadcast в PlayService о выборе композиции и старте проигрывания
                 Intent intent = new Intent(MainActivity.NEW_TASK_SERVICE_ACTION);
                 intent.putExtra(POSITION, position);
                 intent.putExtra(CURRENT_FRAGMENT, mActivity.getCurrentFragment());
@@ -61,29 +62,42 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             @Override
             public void onClick(View v) {
                 Snackbar
-                        .make(v, "menu", Snackbar.LENGTH_LONG)
+                        .make(v, "Пока не работает!", Snackbar.LENGTH_LONG)
                         .show();
             }
         });
         String band = mAudioList.get(i).get(AudioHolder.ARTIST);
         String song = mAudioList.get(i).get(AudioHolder.TITLE);
+        viewHolder.mCardView.setCardBackgroundColor(mColorList[i]);
         viewHolder.mSongTextView.setText(song);
         viewHolder.mBandTextView.setText(band);
     }
+
+    public void setPressedPositon( int position){
+        //После нажатия на item из фрагиента меняется цвет CardView. У ранее нажатого на белый, у нового на ...
+        mColorList[mPressedPosition] = Color.parseColor("#FFFAFAFA");
+        mPressedPosition = position;
+        mColorList[mPressedPosition] = Color.parseColor("#cfd8dc");
+    }
+
 
     @Override
     public int getItemCount() {
         return mAudioList.size();
     }
 
+
+
     public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mBandTextView;
         private TextView mSongTextView;
         private FrameLayout mPressPlayFrameLayout, mPressMenuFrameLayout;
+        private CardView mCardView;
 
         public RecyclerViewHolder(View itemView) {
             super(itemView);
+            mCardView = (CardView) itemView.findViewById(R.id.recycler_card_view);
             mPressPlayFrameLayout = (FrameLayout) itemView.findViewById(R.id.pressPlayFrameLayout);
             mPressMenuFrameLayout = (FrameLayout) itemView.findViewById(R.id.pressMenuframeLayout);
             mBandTextView = (TextView) itemView.findViewById(R.id.band_name);

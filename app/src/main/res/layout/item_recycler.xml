@@ -5,7 +5,10 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:layout_margin="8dp"
+    android:id="@+id/recycler_card_view"
     card_view:cardCornerRadius="4dp">
+
+
 
     <RelativeLayout
         android:id="@+id/relative_layout"

@@ -7,20 +7,18 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-
 import com.mezmeraiz.vkontakteaudioplayer.R;
-
 import java.util.ArrayList;
 
 /**
- * Created by pc on 14.10.2015.
+ * Адаптер для ViewPager
  */
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
 
-    ArrayList<Fragment> mFragmentList;
-    ArrayList<Integer> mIconList;
-    Context mContext;
+    private ArrayList<Fragment> mFragmentList;
+    private ArrayList<Integer> mIconList;
+    private Context mContext;
 
     public ViewPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
