@@ -54,8 +54,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View v) {// Отправка broadcast в PlayService о выборе композиции и старте проигрывания
                 Intent intent = new Intent(MainActivity.NEW_TASK_SERVICE_ACTION);
                 intent.putExtra(POSITION, position);
-                intent.putExtra(CURRENT_FRAGMENT, mActivity.getCurrentFragment());
-                mActivity.sendBroadcast(intent);
+                if(mActivity != null){
+                    intent.putExtra(CURRENT_FRAGMENT, mActivity.getCurrentFragment());
+                    mActivity.sendBroadcast(intent);
+                }
             }
         });
         pressMenuFrameLayout.setOnClickListener(new View.OnClickListener() {

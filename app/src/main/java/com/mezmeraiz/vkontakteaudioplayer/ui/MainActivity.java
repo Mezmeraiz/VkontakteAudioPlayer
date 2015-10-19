@@ -10,6 +10,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mSongTextView, mBandTextView;
     private SeekBar mSeekBar;
     private Toolbar mToolbar;
+    private MenuItem mSearchItem;
     private FrameLayout mTopFrameLayout, mBottomFrameLayout;
     private FloatingActionButton mFloatingActionButton;
     private boolean isStarted;// Становится true При первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                         mToolbar.setTitle("Сохраненные");
                         break;
                     case AudioHolder.SEARCH_FRAGMENT:
-                        mToolbar.setTitle("Поиск");
+                        mToolbar.setTitle("");
                         break;
                 }
             }
@@ -231,15 +233,18 @@ public class MainActivity extends AppCompatActivity {
         sendBroadcast(new Intent(REQUEST_DATA_FROM_SERVICE_ACTION));
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        mSearchItem = menu.findItem(R.id.toolbar_search);
+        mSearchItem.setVisible(false);
         return true;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             logout();

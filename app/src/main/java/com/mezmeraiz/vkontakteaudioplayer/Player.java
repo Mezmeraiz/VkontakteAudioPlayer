@@ -114,8 +114,15 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if(++mPosition < mAudioList.size())
+        if(++mPosition < mAudioList.size() && mCurrentFragment != AudioHolder.SEARCH_FRAGMENT){
             newTask(mPosition, mCurrentFragment);
+        }else {
+            isPlaying = false;
+            isPrepared = false;
+        }
+
+
+
     }
 
     @Override

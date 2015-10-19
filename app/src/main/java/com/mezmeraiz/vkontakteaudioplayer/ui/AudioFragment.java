@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
@@ -43,10 +44,12 @@ public class AudioFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private LinkedList<Map<String,String>> mAudioList = new LinkedList<Map<String,String>>();
     private BroadcastReceiver mBroadcastReceiver;
+    private Context mContext;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = getActivity().getApplicationContext();
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -58,7 +61,7 @@ public class AudioFragment extends Fragment {
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
-        getActivity().getApplicationContext().registerReceiver(mBroadcastReceiver, intentFilter);
+        mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
     @Nullable
@@ -90,6 +93,13 @@ public class AudioFragment extends Fragment {
         getActivity().getApplicationContext().unregisterReceiver(mBroadcastReceiver);
     }
 
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.toolbar_search).setVisible(false);
+
+    }
+
     private void loadAudio(){
         // Загрузка данных с сервера VK, запись данных в AudioHolder и установка адаптера
         VKRequest vkRequest = new VKRequest("audio.get", VKParameters.from(VKApiConst.OWNER_ID, VKSdk.getAccessToken().userId));
@@ -114,7 +124,7 @@ public class AudioFragment extends Fragment {
                     AudioHolder.getInstance().setList(mAudioList, AudioHolder.AUDIO_FRAGMENT);
                     mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity());
                     mRecyclerView.setAdapter(mRecyclerViewAdapter);
-                    getActivity().getApplicationContext().sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
+                    mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
