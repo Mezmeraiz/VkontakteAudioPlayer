@@ -103,7 +103,7 @@ public class SearchFragment extends Fragment {
         mRecyclerView.setItemAnimator(itemAnimator);
         mAudioList = AudioHolder.getInstance().getList(AudioHolder.SEARCH_FRAGMENT);
         if(mAudioList != null){
-            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity());
+            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), null);
             mRecyclerView.setAdapter(mRecyclerViewAdapter);
             mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
         }
@@ -132,7 +132,7 @@ public class SearchFragment extends Fragment {
                         mAudioList.add(map);
                     }
                     AudioHolder.getInstance().setList(mAudioList, AudioHolder.SEARCH_FRAGMENT);
-                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity());
+                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), null);
                     mRecyclerView.setAdapter(mRecyclerViewAdapter);
                 } catch (JSONException e) {
                     e.printStackTrace();

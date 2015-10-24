@@ -78,6 +78,8 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
     public void onSeekBarPressed(int progress){
         // Из активности пришел сигнал о том, что нажата SeekBar
         // Переключаем прогресс mMediaPlayer
+        if(!isPrepared)
+            return;
         mMediaPlayer.seekTo(progress * 1000);
     }
 
