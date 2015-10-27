@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
@@ -28,7 +26,6 @@ public class LoginActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         VKUIHelper.onCreate(this);
         String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
-        Log.d("myLogs", fingerprints[0]);
         // Инициализация SDK - передаем слушатель и id standalone-приложения
         VKSdk.initialize(listener, APP_ID);
         // Если token в наличии - запускаем активность, если нет - авторизацию

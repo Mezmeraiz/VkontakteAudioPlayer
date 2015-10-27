@@ -1,8 +1,11 @@
 package com.mezmeraiz.vkontakteaudioplayer;
 
+import android.database.Cursor;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Класс для хранения текущих списков аудиозаписей
@@ -10,17 +13,20 @@ import java.util.Map;
 public class AudioHolder {
 
 
+    public final static String ID = "id";
     public final static String TITLE = "title";
     public final static String ARTIST = "artist";
     public final static String URL = "url";
     public final static String DURATION = "duration";
+    public final static String PATH = "path";
     public final static int AUDIO_FRAGMENT = 0;
     public final static int SAVED_FRAGMENT = 1;
     public final static int SEARCH_FRAGMENT = 2;
 
-    private LinkedList<Map<String,String>> mAudioList = new LinkedList<Map<String,String>>();
-    private LinkedList<Map<String,String>> mSavedList = new LinkedList<Map<String,String>>();
-    private LinkedList<Map<String,String>> mSearchList = new LinkedList<Map<String,String>>();
+    private List<Map<String,String>> mAudioList;
+    private List<Map<String,String>> mSavedList;
+    private List<Map<String,String>> mSearchList;
+    private Set<String> mIdSet;
 
     private static AudioHolder instance;
 
@@ -41,13 +47,13 @@ public class AudioHolder {
     public void setList(List list, int currentFragment){
         switch (currentFragment){
             case AUDIO_FRAGMENT:
-                mAudioList = (LinkedList<Map<String, String>>) list;
+                mAudioList = list;
                 break;
             case SAVED_FRAGMENT:
-                mSavedList = (LinkedList<Map<String, String>>) list;
+                mSavedList = list;
                 break;
             case SEARCH_FRAGMENT:
-                mSearchList = (LinkedList<Map<String, String>>) list;
+                mSearchList = list;
                 break;
         }
     }
@@ -64,5 +70,14 @@ public class AudioHolder {
                 return null;
         }
     }
+
+    public Set<String> getIdSet() {
+        return mIdSet;
+    }
+
+    public void setIdSet(Set<String> idSet) {
+        this.mIdSet = idSet;
+    }
+
 
 }

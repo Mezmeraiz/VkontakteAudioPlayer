@@ -83,7 +83,6 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         mMediaPlayer.seekTo(progress * 1000);
     }
 
-
     public void release(){
         if (mTimerTask !=null){
             mTimerTask.cancel();
@@ -100,7 +99,6 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         isPlaying = false;
         isPrepared = false;
     }
-
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -122,16 +120,12 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
             isPlaying = false;
             isPrepared = false;
         }
-
-
-
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
     }
-
 
     public void sendBroadcastStartPlaying(){
         // Отправка в MainActivity данных о начале проигрывания новой композиции
@@ -146,18 +140,15 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         mContext.sendBroadcast(intent);
     }
 
-
     private void startMediaPlayer(){
         mTimer = new Timer();
         mTimerTask = new TimerTask(){
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 if(mMediaPlayer!=null){
                     sendBroadcastSeekBarProgress(mMediaPlayer.getCurrentPosition()/1000);
                 }
             }
-
         };
         String source = mAudioList.get(mPosition).get(AudioHolder.URL);
         mMediaPlayer = new MediaPlayer();
@@ -173,7 +164,6 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         mMediaPlayer.setOnErrorListener(this);
         mMediaPlayer.prepareAsync();
     }
-
 
     private void sendBroadcastPressedBack(){
         // Отправка сигнала в MainActivity на переключение иконки

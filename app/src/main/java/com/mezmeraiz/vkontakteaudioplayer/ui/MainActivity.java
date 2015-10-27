@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -19,9 +20,11 @@ import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
+import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
+import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
 import java.util.ArrayList;
@@ -40,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private ViewPagerAdapter mViewPagerAdapter;
     private TabLayout mTabLayout;
+    private AudioFragment mAudioFragment;
+    private SaveFragment mSaveFragment;
+    private SearchFragment mSearchFragment;
     private BroadcastReceiver mBroadcastReceiver;
     private TextView mSongTextView, mBandTextView;
     private SeekBar mSeekBar;
@@ -48,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout mTopFrameLayout, mBottomFrameLayout;
     private FloatingActionButton mFloatingActionButton;
     private boolean isStarted;// Становится true При первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
-
-
 
 
     @Override
@@ -117,13 +121,14 @@ public class MainActivity extends AppCompatActivity {
         startService(new Intent(START_SERVICE_ACTION));
     }
 
-
-
     private void setViewPager(){
         ArrayList<Fragment> fragmentList = new ArrayList<Fragment>();
-        fragmentList.add(new AudioFragment());
-        fragmentList.add(new SaveFragment());
-        fragmentList.add(new SearchFragment());
+        mAudioFragment = new AudioFragment();
+        mSaveFragment = new SaveFragment();
+        mSearchFragment = new SearchFragment();
+        fragmentList.add(mAudioFragment);
+        fragmentList.add(mSaveFragment);
+        fragmentList.add(mSearchFragment);
         ArrayList<Integer> iconList = new ArrayList<Integer>();
         iconList.add(R.drawable.music_note);
         iconList.add(R.drawable.download_icon);
@@ -268,6 +273,15 @@ public class MainActivity extends AppCompatActivity {
 
     public int getCurrentFragment(){
         return mViewPager.getCurrentItem();
+    }
+
+    public OnDataChangedListener getOnDataChangedListener(){
+        // Возвращает Listener из SaveFragment
+        if (mSaveFragment instanceof OnDataChangedListener){
+            return mSaveFragment;
+        }else{
+            throw new IllegalArgumentException("SaveFragment should implement OnDataChangedListener");
+        }
     }
 
 }

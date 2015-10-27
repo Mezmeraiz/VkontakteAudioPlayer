@@ -3,26 +3,16 @@ package com.mezmeraiz.vkontakteaudioplayer.adapters;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
-import com.mezmeraiz.vkontakteaudioplayer.ui.AudioFragment;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 import java.util.Arrays;
 import java.util.List;
@@ -76,10 +66,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View v) {
                 v.setTag(i);
                 mPopupMenuListener.onClickPopupMenu(v);
-
-                Snackbar
-                        .make(v, "Пока не работает!" , Snackbar.LENGTH_LONG)
-                        .show();
             }
         });
 
@@ -91,20 +77,22 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public void setPressedPositon( int position){
-        //После нажатия на item из фрагиента меняется цвет CardView. У ранее нажатого на белый, у нового на ...
+        // После нажатия на item из фрагмента меняется цвет CardView. У ранее нажатого на белый, у нового на ...
         mColorList[mPressedPosition] = Color.parseColor("#FFFAFAFA");
         mPressedPosition = position;
         mColorList[mPressedPosition] = Color.parseColor("#cfd8dc");
     }
 
-
+    public void removePressedPosition(){
+        // Снятие выделения с итема, после нажатия на итем в другом фрагменте
+        mColorList[mPressedPosition] = Color.parseColor("#FFFAFAFA");
+    }
 
 
     @Override
     public int getItemCount() {
         return mAudioList.size();
     }
-
 
 
     public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
