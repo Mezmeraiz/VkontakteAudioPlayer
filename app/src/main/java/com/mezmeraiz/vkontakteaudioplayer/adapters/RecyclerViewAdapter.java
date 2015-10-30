@@ -1,14 +1,18 @@
 package com.mezmeraiz.vkontakteaudioplayer.adapters;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
@@ -25,17 +29,25 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public final static String POSITION = "POSITION";
     public final static String CURRENT_FRAGMENT = "CURRENT_FRAGMENT";
+    public final static String STOP_PLAYING_FROM_ADAPTER = "STOP_PLAYING_FROM_ADAPTER"; // В PlayService
+    public final static String DECREASE_POSITION_FROM_ADAPTER = "DECREASE_POSITION_FROM_ADAPTER"; // В PlayService
     private List<Map<String,String>> mAudioList;
-    private int[] mColorList;
     private MainActivity mActivity;
-    private int mPressedPosition;
+    private int mPressedPosition = -1;
     private PopupMenuListener mPopupMenuListener;
+    private Context mContext;
+    private final int mCurrentFragment; // Фрагмент, для которого ставится данный адаптер
+    private final Drawable mGrayDotsDrawable, mBlackDotsDrawable;
+    private final int mGreyColor = Color.parseColor("#cfd8dc");
+    private final int mWhiteColor = Color.parseColor("#FFFAFAFA");
 
-    public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, PopupMenuListener popupMenuListener) {
+    public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, PopupMenuListener popupMenuListener, int currentFragment) {
         mAudioList = itemList;
-        mColorList = new int[mAudioList.size()];
-        Arrays.fill(mColorList, Color.parseColor("#FFFAFAFA"));
+        mCurrentFragment = currentFragment;
         mActivity = (MainActivity) activity;
+        mGrayDotsDrawable = mActivity.getResources().getDrawable(R.drawable.dots_vertical_gray);
+        mBlackDotsDrawable = mActivity.getResources().getDrawable(R.drawable.dots_vertical);
+        mContext = mActivity.getApplicationContext();
         mPopupMenuListener = popupMenuListener;
     }
 
@@ -47,15 +59,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder viewHolder, final int i) {
-
         FrameLayout pressPlayFrameLayout = viewHolder.mPressPlayFrameLayout;
         FrameLayout pressMenuFrameLayout = viewHolder.mPressMenuFrameLayout;
+        ImageView pressMenuImageView = viewHolder.mPressMenuImageView;
         pressPlayFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {// Отправка broadcast в PlayService о выборе композиции и старте проигрывания
                 Intent intent = new Intent(MainActivity.NEW_TASK_SERVICE_ACTION);
                 intent.putExtra(POSITION, i);
-                if(mActivity != null){
+                if (mActivity != null) {
                     intent.putExtra(CURRENT_FRAGMENT, mActivity.getCurrentFragment());
                     mActivity.sendBroadcast(intent);
                 }
@@ -68,32 +80,59 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 mPopupMenuListener.onClickPopupMenu(v);
             }
         });
-
+        // Если аудиозапись есть в сохраненных - ставим серую иконку на загрузку. Если нет - черную
+        if (mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getIdSet() != null && AudioHolder.getInstance().getIdSet().contains(mAudioList.get(i).get(AudioHolder.ID))){
+            pressMenuImageView.setImageDrawable(mGrayDotsDrawable);
+        }else{
+            pressMenuImageView.setImageDrawable(mBlackDotsDrawable);
+        }
         String band = mAudioList.get(i).get(AudioHolder.ARTIST);
         String song = mAudioList.get(i).get(AudioHolder.TITLE);
-        viewHolder.mCardView.setCardBackgroundColor(mColorList[i]);
+        if (i == mPressedPosition){
+            viewHolder.mCardView.setCardBackgroundColor(mGreyColor);
+        }else {
+            viewHolder.mCardView.setCardBackgroundColor(mWhiteColor);
+        }
         viewHolder.mSongTextView.setText(song);
         viewHolder.mBandTextView.setText(band);
     }
 
-    public void setPressedPositon( int position){
+    public void setPressedPositon(int position){
         // После нажатия на item из фрагмента меняется цвет CardView. У ранее нажатого на белый, у нового на ...
-        mColorList[mPressedPosition] = Color.parseColor("#FFFAFAFA");
         mPressedPosition = position;
-        mColorList[mPressedPosition] = Color.parseColor("#cfd8dc");
     }
 
     public void removePressedPosition(){
         // Снятие выделения с итема, после нажатия на итем в другом фрагменте
-        mColorList[mPressedPosition] = Color.parseColor("#FFFAFAFA");
+        mPressedPosition = -1;
     }
 
+    public void removeItem(int position){
+        // Удаление элемента из списка.
+        // Удаление из idSet id удаленной аудиозаписи
+        // Если удаленная позиция меньше позиции, которая в данный момент проигрывается -
+        // - опускаем выделение на 1 итем ниже, перезаписываем список в AudioHolder и отправляем
+        // broadcast в PlayService, чтобы там в объекте Player уменьшить позицию на 1
+        // Если удаленная позиция равна позиции проигрывания - снимаем выделение итема и отправляем
+        // broadcast на остановку MediaPlayer
+        AudioHolder.getInstance().getIdSet().remove(mAudioList.get(position).get(AudioHolder.ID));
+        mAudioList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(0, mAudioList.size());
+        if(position < mPressedPosition){
+            mPressedPosition--;
+            AudioHolder.getInstance().setList(mAudioList, AudioHolder.SAVED_FRAGMENT);
+            mContext.sendBroadcast(new Intent(DECREASE_POSITION_FROM_ADAPTER));
+        }else if(position == mPressedPosition){
+            removePressedPosition();
+            mContext.sendBroadcast(new Intent(STOP_PLAYING_FROM_ADAPTER));
+        }
+    }
 
     @Override
     public int getItemCount() {
         return mAudioList.size();
     }
-
 
     public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
@@ -101,6 +140,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         private TextView mSongTextView;
         private FrameLayout mPressPlayFrameLayout, mPressMenuFrameLayout;
         private CardView mCardView;
+        private ImageView mPressMenuImageView;
 
         public RecyclerViewHolder(View itemView) {
             super(itemView);
@@ -109,8 +149,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             mPressMenuFrameLayout = (FrameLayout) itemView.findViewById(R.id.pressMenuframeLayout);
             mBandTextView = (TextView) itemView.findViewById(R.id.band_name);
             mSongTextView = (TextView) itemView.findViewById(R.id.song_name);
-
+            mPressMenuImageView = (ImageView) itemView.findViewById(R.id.pressMenuImageView);
         }
-
     }
 }

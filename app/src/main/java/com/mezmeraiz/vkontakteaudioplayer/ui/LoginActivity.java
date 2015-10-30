@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
@@ -32,6 +34,9 @@ public class LoginActivity extends AppCompatActivity{
         if (VKSdk.wakeUpSession()) {
             startMainActivity();
         }else{
+            AudioHolder.getInstance().setList(null, AudioHolder.AUDIO_FRAGMENT);
+            AudioHolder.getInstance().setList(null, AudioHolder.SAVED_FRAGMENT);
+            AudioHolder.getInstance().setList(null, AudioHolder.SEARCH_FRAGMENT);
             authorize();
         }
     }

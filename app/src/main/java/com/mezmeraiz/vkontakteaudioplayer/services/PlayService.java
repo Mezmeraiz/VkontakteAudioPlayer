@@ -40,6 +40,10 @@ public class PlayService extends Service {
                     onReceiveSeekBarPressed(intent);
                 else if(intent.getAction().equals(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION))
                     onReceiveRequestDataFromActivity();
+                else if(intent.getAction().equals(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER))
+                    onReceiveStopPlayingFromAdapter();
+                else if(intent.getAction().equals(RecyclerViewAdapter.DECREASE_POSITION_FROM_ADAPTER))
+                    onReceiveDecreasePositionFromAdapter();
             }
         };
 
@@ -49,6 +53,8 @@ public class PlayService extends Service {
         intentFilter.addAction(MainActivity.FAB_PRESSED_SERVICE_ACTION);
         intentFilter.addAction(MainActivity.SEEKBAR_PRESSED_SERVICE_ACTION);
         intentFilter.addAction(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION);
+        intentFilter.addAction(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER);
+        intentFilter.addAction(RecyclerViewAdapter.DECREASE_POSITION_FROM_ADAPTER);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
     }
@@ -101,6 +107,17 @@ public class PlayService extends Service {
     private void onReceiveRequestDataFromActivity(){
         // MainActivity перезапустилась - просит данные о текущей композиции
         mPlayer.sendBroadcastStartPlaying();
+    }
+
+    private void onReceiveStopPlayingFromAdapter(){
+        // В SaveFragment удалена текущая позиция проигрывания - останавливаем MediaPlayer
+        mPlayer.release();
+    }
+
+    private void onReceiveDecreasePositionFromAdapter(){
+        // В SaveFragment удалена позиция до позиции проигрывания -
+        // - уменьшаем позицию в Player
+        mPlayer.decreasePosition();
     }
 
 

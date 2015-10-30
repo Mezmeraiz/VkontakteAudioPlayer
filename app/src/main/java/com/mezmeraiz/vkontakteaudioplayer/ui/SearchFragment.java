@@ -20,9 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.Downloader;
+import com.mezmeraiz.vkontakteaudioplayer.DownloaderListener;
+import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
@@ -44,7 +47,7 @@ import java.util.Map;
 /**
  * Фрагмент для поиска
  */
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements OnRestartActivityListener{
 
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
@@ -54,6 +57,7 @@ public class SearchFragment extends Fragment {
     private Context mContext;
     private SearchView mSearchView;
     private PopupMenuListener mPopupMenuListener;
+    private DownloaderListener mDownloaderListener;
     private MainActivity mMainActivity;
 
 
@@ -70,6 +74,13 @@ public class SearchFragment extends Fragment {
                     onReceiveStartPlaying(intent);
             }
         };
+        mDownloaderListener = new DownloaderListener() {
+            @Override
+            public void onDownloadFinished(String id, int position) {
+                AudioHolder.getInstance().getIdSet().add(id);
+                mRecyclerViewAdapter.notifyItemChanged(position);
+            }
+        };
         mPopupMenuListener = new PopupMenuListener() {
             @Override
             public void onClickPopupMenu(final View v) {
@@ -78,7 +89,13 @@ public class SearchFragment extends Fragment {
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener());
+                        // Проверяем, сохранена ли уже аудиозапись.
+                        // Если нет - сохраняем
+                        if (AudioHolder.getInstance().getIdSet().contains(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))){
+                            Toast.makeText(mContext, "Уже загружено", Toast.LENGTH_SHORT).show();
+                        }else{
+                            new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
+                        }
                         return false;
                     }
                 });
@@ -124,7 +141,7 @@ public class SearchFragment extends Fragment {
         mRecyclerView.setItemAnimator(itemAnimator);
         mAudioList = AudioHolder.getInstance().getList(AudioHolder.SEARCH_FRAGMENT);
         if(mAudioList != null){ // Если список уже есть в AudioHolder - ставим адаптер.
-            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener);
+            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.SEARCH_FRAGMENT);
             mRecyclerView.setAdapter(mRecyclerViewAdapter);
             mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
         }
@@ -154,7 +171,7 @@ public class SearchFragment extends Fragment {
                         mAudioList.add(map);
                     }
                     AudioHolder.getInstance().setList(mAudioList, AudioHolder.SEARCH_FRAGMENT);
-                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener);
+                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.SEARCH_FRAGMENT);
                     mRecyclerView.setAdapter(mRecyclerViewAdapter);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -200,4 +217,12 @@ public class SearchFragment extends Fragment {
         super.onDestroy();
         mContext.unregisterReceiver(mBroadcastReceiver);
     }
+
+    @Override
+    public void scrollToPosition(int position) {
+        if(mRecyclerView != null && mRecyclerViewAdapter != null)
+            mRecyclerView.scrollToPosition(position);
+    }
+
+
 }

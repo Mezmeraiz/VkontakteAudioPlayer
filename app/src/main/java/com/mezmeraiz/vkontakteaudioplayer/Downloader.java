@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Загрузчик аудиозаписей
@@ -27,15 +28,19 @@ public class Downloader {
     private Context mContext;
     private String mId, mSongName, mBandName, mUrl, mDuration;
     private OnDataChangedListener mOnDataChangedListener;
+    private DownloaderListener mDownloaderListener;
+    private int mPosition;
 
     public Downloader(Context context){
         mContext = context;
     }
 
-    public void download(int currentFragment, int position, OnDataChangedListener onDataChangedListener) {
+    public void download(int currentFragment, int position, OnDataChangedListener onDataChangedListener, DownloaderListener downloaderListener) {
         mOnDataChangedListener = onDataChangedListener;
+        mDownloaderListener = downloaderListener;
+        mPosition = position;
         List<Map<String, String>> audioList = AudioHolder.getInstance().getList(currentFragment);
-        Map<String, String> oneSongMap =  audioList.get(position);
+        Map<String, String> oneSongMap =  audioList.get(mPosition);
         mId = oneSongMap.get(AudioHolder.ID);
         mSongName = oneSongMap.get(AudioHolder.TITLE);
         mBandName = oneSongMap.get(AudioHolder.ARTIST);
@@ -54,9 +59,8 @@ public class Downloader {
         @Override
         protected void onPostExecute(String songPath) {
             super.onPostExecute(songPath);
-            DB db = DB.getInstance().open(mContext);
-            db.addNewSong(mId, mSongName, mBandName, songPath, mDuration);
             mOnDataChangedListener.onDataChanged();
+            mDownloaderListener.onDownloadFinished(mId, mPosition);
             Toast.makeText(mContext, mSongName + " загружено", Toast.LENGTH_SHORT).show();
         }
     }
@@ -77,6 +81,8 @@ public class Downloader {
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 File newSong = new File(songPath);
                 newSong.createNewFile();
+                DB db = DB.getInstance().open(mContext);
+                db.addNewSong(mId, mSongName, mBandName, songPath, mDuration);
                 InputStream inputStream = new BufferedInputStream(connection.getInputStream());
                 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(newSong));
                 int read;

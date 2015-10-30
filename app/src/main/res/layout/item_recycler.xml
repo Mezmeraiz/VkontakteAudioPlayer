@@ -30,7 +30,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageView2"
+                android:id="@+id/pressMenuImageView"
                 android:background="@drawable/dots_vertical"
                 android:layout_gravity="center" />
         </FrameLayout>

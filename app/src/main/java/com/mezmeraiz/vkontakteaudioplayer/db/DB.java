@@ -57,6 +57,10 @@ public class DB {
         cv.put(AudioHolder.PATH, path);
         cv.put(AudioHolder.DURATION, duration);
         mSQLiteDatabase.insert(DBHelper.TABLE_NAME,null,cv);
+    }
+
+    public void deleteSong(long id){
+        mSQLiteDatabase.delete(DBHelper.TABLE_NAME, AudioHolder.ID + " = " + id, null);
 
     }
 

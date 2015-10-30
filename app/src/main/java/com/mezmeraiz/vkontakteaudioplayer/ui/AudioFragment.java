@@ -16,8 +16,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
+
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.Downloader;
+import com.mezmeraiz.vkontakteaudioplayer.DownloaderListener;
+import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
@@ -42,7 +46,7 @@ import java.util.Map;
 /**
  * Created by pc on 14.10.2015.
  */
-public class AudioFragment extends Fragment {
+public class AudioFragment extends Fragment implements OnRestartActivityListener{
 
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
@@ -50,7 +54,8 @@ public class AudioFragment extends Fragment {
     private BroadcastReceiver mBroadcastReceiver;
     private Context mContext;
     private MainActivity mMainActivity;
-    public PopupMenuListener mPopupMenuListener; // Слушатель в адаптер для создания PopupMenu по клику на иконку "меню" в итеме из RecycleView
+    private DownloaderListener mDownloaderListener;
+    private PopupMenuListener mPopupMenuListener; // Слушатель в адаптер для создания PopupMenu по клику на иконку "меню" в итеме из RecycleView
 
 
     @Override
@@ -66,6 +71,13 @@ public class AudioFragment extends Fragment {
                     onReceiveStartPlaying(intent);
             }
         };
+        mDownloaderListener = new DownloaderListener() {
+            @Override
+            public void onDownloadFinished(String id, int position) {
+                AudioHolder.getInstance().getIdSet().add(id);
+                mRecyclerViewAdapter.notifyItemChanged(position);
+            }
+        };
         mPopupMenuListener = new PopupMenuListener() {
             @Override
             public void onClickPopupMenu(final View v) {
@@ -74,7 +86,13 @@ public class AudioFragment extends Fragment {
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        new Downloader(mContext).download(AudioHolder.AUDIO_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener());
+                        // Проверяем, сохранена ли уже аудиозапись.
+                        // Если нет - сохраняем
+                        if (AudioHolder.getInstance().getIdSet().contains(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))){
+                            Toast.makeText(mContext, "Уже сохранено", Toast.LENGTH_SHORT).show();
+                        }else{
+                            new Downloader(mContext).download(AudioHolder.AUDIO_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
+                        }
                         return false;
                     }
                 });
@@ -97,7 +115,7 @@ public class AudioFragment extends Fragment {
         mRecyclerView.setItemAnimator(itemAnimator);
         mAudioList = AudioHolder.getInstance().getList(AudioHolder.AUDIO_FRAGMENT);
         if(mAudioList != null){ // Если список уже есть в AudioHolder - ставим адаптер. Если нет - грузим новый
-            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener);
+            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.AUDIO_FRAGMENT);
             mRecyclerView.setAdapter(mRecyclerViewAdapter);
             mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
         }else{
@@ -156,7 +174,7 @@ public class AudioFragment extends Fragment {
                         mAudioList.add(map);
                     }
                     AudioHolder.getInstance().setList(mAudioList, AudioHolder.AUDIO_FRAGMENT);
-                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener);
+                    mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.AUDIO_FRAGMENT);
                     mRecyclerView.setAdapter(mRecyclerViewAdapter);
                     mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
                 } catch (JSONException e) {
@@ -176,5 +194,13 @@ public class AudioFragment extends Fragment {
         });
 
     }
+
+    @Override
+    public void scrollToPosition(int position) {
+        if(mRecyclerView != null && mRecyclerViewAdapter != null)
+            mRecyclerView.scrollToPosition(position);
+    }
+
+
 
 }

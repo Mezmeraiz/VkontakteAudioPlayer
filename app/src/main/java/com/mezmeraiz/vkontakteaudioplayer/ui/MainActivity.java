@@ -31,6 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+//TODO После окончания загрузки список прыгает к проигрываемой композиции
+
+
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String START_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.START_SERVICE_ACTION";//Action для запуска сервиса
@@ -53,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem mSearchItem;
     private FrameLayout mTopFrameLayout, mBottomFrameLayout;
     private FloatingActionButton mFloatingActionButton;
-    private boolean isStarted;// Становится true При первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
+    private boolean isStarted;// Становится true при первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
 
 
     @Override
@@ -84,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser)
+                if (fromUser)
                     sendBroadcastSeekBarPressed(progress);
             }
 
@@ -186,9 +190,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void onReceiveStartPlaying(Intent intent){
         // По сигналу из сервиса о новой композиции заполняем view
-        List<Map<String, String>> currentList = AudioHolder.getInstance().getList(intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0));
-        mSongTextView.setText(currentList.get(intent.getIntExtra(Player.POSITION_KEY, 0)).get(AudioHolder.TITLE));
-        mBandTextView.setText(currentList.get(intent.getIntExtra(Player.POSITION_KEY, 0)).get(AudioHolder.ARTIST));
+        int currentFragment = intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0);
+        int currentPosition = intent.getIntExtra(Player.POSITION_KEY, 0);
+        List<Map<String, String>> currentList = AudioHolder.getInstance().getList(currentFragment);
+        switch (currentFragment){
+            case AudioHolder.AUDIO_FRAGMENT:
+                mAudioFragment.scrollToPosition(currentPosition);
+                break;
+            case AudioHolder.SAVED_FRAGMENT:
+                mSaveFragment.scrollToPosition(currentPosition);
+                break;
+            case AudioHolder.SEARCH_FRAGMENT:
+                mSearchFragment.scrollToPosition(currentPosition);
+                break;
+        }
+        mSongTextView.setText(currentList.get(currentPosition).get(AudioHolder.TITLE));
+        mBandTextView.setText(currentList.get(currentPosition).get(AudioHolder.ARTIST));
         mSeekBar.setMax(intent.getIntExtra(Player.DURATION_KEY, 0));
         mSeekBar.setProgress(intent.getIntExtra(Player.PROGRESS_KEY, 0));
         mSeekBar.setSecondaryProgress(0);

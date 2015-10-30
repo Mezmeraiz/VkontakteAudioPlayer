@@ -75,12 +75,21 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         sendBroadcastPressedBack();
     }
 
+
+
     public void onSeekBarPressed(int progress){
         // Из активности пришел сигнал о том, что нажата SeekBar
         // Переключаем прогресс mMediaPlayer
         if(!isPrepared)
             return;
         mMediaPlayer.seekTo(progress * 1000);
+    }
+
+    public void decreasePosition(){
+        // Метод уменьшает позицию проигрывания на 1 и обновляет список аудиозаписей после
+        // получения broadcast от RecyclerAdapter об удалении позиции списка
+        mPosition--;
+        mAudioList = AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
     }
 
     public void release(){
@@ -173,13 +182,14 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
     }
 
     private void sendBroadcastSeekBarProgress(int progress){
-        // Отправка в MainActivity прогресс SeekBar
+        // Отправка в MainActivity прогресса SeekBar
         Intent intent = new Intent(SEEKBAR_PROGRESS_ACTION);
         intent.putExtra(SEEKBAR_PROGRESS_KEY, progress);
         mContext.sendBroadcast(intent);
     }
 
     private void sendBroadcastSeekBarBuffering(int percent){
+        // Отправка в MainActivity прогресса буферизации
         Intent intent = new Intent(SEEKBAR_BUFFERING_ACTION);
         intent.putExtra(SEEKBAR_BUFFERING_KEY, percent);
         mContext.sendBroadcast(intent);

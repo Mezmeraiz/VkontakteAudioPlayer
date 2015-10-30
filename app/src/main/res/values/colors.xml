@@ -4,4 +4,6 @@
     <color name="primaryColorDark">#455A64</color>
     <color name="accentColor">#FF4081</color>
     <color name="white">#ffffff</color>
+    <color name="whiteCardView">#FFFAFAFA</color>
+    <color name="greyCardView">#cfd8dc</color>
 </resources>

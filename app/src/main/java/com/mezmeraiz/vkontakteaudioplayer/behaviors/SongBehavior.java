@@ -28,7 +28,7 @@ public class SongBehavior extends CoordinatorLayout.Behavior<FrameLayout> {
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, FrameLayout child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
-        Log.d("myLogs", " " + dxConsumed + " " + dyConsumed + " " + dxUnconsumed + " " + dyUnconsumed);
+        //Log.d("myLogs", " " + dxConsumed + " " + dyConsumed + " " + dxUnconsumed + " " + dyUnconsumed);
         if (dyConsumed > 0){
 
             child.animate().translationY(83).setDuration(100);
