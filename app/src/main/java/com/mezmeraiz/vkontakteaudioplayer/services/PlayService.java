@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
+import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
 
 
 /**
@@ -39,11 +40,11 @@ public class PlayService extends Service {
                 else if(intent.getAction().equals(MainActivity.SEEKBAR_PRESSED_SERVICE_ACTION))
                     onReceiveSeekBarPressed(intent);
                 else if(intent.getAction().equals(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION))
-                    onReceiveRequestDataFromActivity();
+                    onReceiveRequestDataFromActivity(intent);
                 else if(intent.getAction().equals(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER))
                     onReceiveStopPlayingFromAdapter();
-                else if(intent.getAction().equals(RecyclerViewAdapter.DECREASE_POSITION_FROM_ADAPTER))
-                    onReceiveDecreasePositionFromAdapter();
+                else if(intent.getAction().equals(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER))
+                    onReceiveDecreasePositionFromAdapter(intent);
             }
         };
 
@@ -54,7 +55,7 @@ public class PlayService extends Service {
         intentFilter.addAction(MainActivity.SEEKBAR_PRESSED_SERVICE_ACTION);
         intentFilter.addAction(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION);
         intentFilter.addAction(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER);
-        intentFilter.addAction(RecyclerViewAdapter.DECREASE_POSITION_FROM_ADAPTER);
+        intentFilter.addAction(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
     }
@@ -104,7 +105,7 @@ public class PlayService extends Service {
         mPlayer.onSeekBarPressed(intent.getIntExtra(SEEKBAR_PRESSED_KEY, 0));
     }
 
-    private void onReceiveRequestDataFromActivity(){
+    private void onReceiveRequestDataFromActivity(Intent intent){
         // MainActivity перезапустилась - просит данные о текущей композиции
         mPlayer.sendBroadcastStartPlaying();
     }
@@ -114,10 +115,10 @@ public class PlayService extends Service {
         mPlayer.release();
     }
 
-    private void onReceiveDecreasePositionFromAdapter(){
-        // В SaveFragment удалена позиция до позиции проигрывания -
-        // - уменьшаем позицию в Player
-        mPlayer.decreasePosition();
+    private void onReceiveDecreasePositionFromAdapter(Intent intent){
+        // Во фрагменте изменена позиция до позиции проигрывания -
+        // - меняем позицию в Player
+        mPlayer.changePosition(intent.getIntExtra(RecyclerViewAdapter.POSITION, 0), intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0));
     }
 
 

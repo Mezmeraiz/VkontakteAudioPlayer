@@ -21,6 +21,9 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
+import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemAnimator;
+import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
 import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
@@ -46,7 +49,9 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
-    private List<Map<String,String>> mAudioList = new LinkedList<Map<String,String>>();
+    private RecyclerView.Adapter mWrappedAdapter;
+    private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
+    private LinkedList<Map<String,String>> mAudioList = new LinkedList<Map<String,String>>();
     private BroadcastReceiver mBroadcastReceiver;
     private Context mContext;
     public PopupMenuListener mPopupMenuListener;
@@ -76,7 +81,7 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                         // Удаление файла, строки из базы и итема из RecyclerView:
                         // Удаление файла с диска, записи из базы и элемента из списка в адаптере
                         int position = (int) v.getTag();
-                        mAudioList = AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
+                        mAudioList = (LinkedList<Map<String, String>>) AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
                         if (mAudioList != null){
                             File file = new File(mAudioList.get(position).get(AudioHolder.URL));
                             file.delete();
@@ -89,7 +94,6 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                 popupMenu.show();
             }
         };
-
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
@@ -99,14 +103,11 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, null);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
-        mRecyclerView.setItemAnimator(itemAnimator);
-        mAudioList = AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
+        initRecyclerView(view);
+        setAdapter();
+        mAudioList = (LinkedList<Map<String, String>>) AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
         if(mAudioList != null && getActivity().getSupportLoaderManager().getLoader(SAVE_FRAGMENT_CURSOR_LOADER) != null){ // Если список уже есть в AudioHolder - ставим адаптер. Если нет - грузим новый
-            mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.SAVED_FRAGMENT);
-            mRecyclerView.setAdapter(mRecyclerViewAdapter);
+            mRecyclerViewAdapter.onDataChanged();
             mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
         }else{
             loadCursor();
@@ -142,6 +143,22 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
 
     }
 
+    private void initRecyclerView(View view){
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setItemAnimator(itemAnimator);
+        mRecyclerViewDragDropManager = new RecyclerViewDragDropManager();
+    }
+
+    private void setAdapter(){
+        mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.SAVED_FRAGMENT);
+        mWrappedAdapter = mRecyclerViewDragDropManager.createWrappedAdapter(mRecyclerViewAdapter);
+        mRecyclerView.setAdapter(mWrappedAdapter);
+        mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -150,13 +167,11 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        // Переносим данные из Cursor в List, записываем в AudioHolder, ставим адаптер
-        // и отправляем запрос в сервис о нажатой позиции
-        List<Map<String, String>> audioList = cursorToList(data);
-        AudioHolder.getInstance().setList(audioList, AudioHolder.SAVED_FRAGMENT);
-        mRecyclerViewAdapter = new RecyclerViewAdapter(audioList, getActivity(), mPopupMenuListener, AudioHolder.SAVED_FRAGMENT);
-        mRecyclerView.setAdapter(mRecyclerViewAdapter);
-        mContext.sendBroadcast(new Intent(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION));
+        // Переносим данные из Cursor в List, записываем в AudioHolder
+        // и извещаем адаптер о новом списке
+        mAudioList = (LinkedList<Map<String, String>>) cursorToList(data);
+        AudioHolder.getInstance().setList(mAudioList, AudioHolder.SAVED_FRAGMENT);
+        mRecyclerViewAdapter.onDataChanged();
     }
 
     @Override
@@ -165,8 +180,8 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     private List<Map<String, String>> cursorToList(Cursor cursor){
-        List<Map<String, String>> audioList = new LinkedList<Map<String, String>>();
-        Set<String> idSet = new HashSet<String>();
+        LinkedList<Map<String, String>> audioList = new LinkedList<Map<String, String>>();
+        Map<String, String> savedMap = new HashMap<String, String>();
         if(cursor.moveToFirst()){
             do{
                 Map<String, String> map = new HashMap<String, String>();
@@ -175,21 +190,21 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                 map.put(AudioHolder.ARTIST, cursor.getString(cursor.getColumnIndex(AudioHolder.ARTIST)));
                 map.put(AudioHolder.DURATION, cursor.getString(cursor.getColumnIndex(AudioHolder.DURATION)));
                 map.put(AudioHolder.ID, cursor.getString(cursor.getColumnIndex(AudioHolder.ID)));
-                audioList.add(map);
-                idSet.add(cursor.getString(cursor.getColumnIndex(AudioHolder.ID)));
+                audioList.addFirst(map);
+                savedMap.put(cursor.getString(cursor.getColumnIndex(AudioHolder.ID)), cursor.getString(cursor.getColumnIndex(AudioHolder.PATH)));
             }while (cursor.moveToNext());
         }
-        AudioHolder.getInstance().setIdSet(idSet);
+        AudioHolder.getInstance().setSavedMap(savedMap);
         return audioList;
     }
 
     @Override
-    public void onDataChanged() {
+    public void onDataChanged(Map<String, String > map) {
         // Вызывается по окончании загрузки новой аудиозаписи из DownLoader
-        // для обновления списка
-        if(getActivity() != null && getActivity().getSupportLoaderManager().getLoader(SAVE_FRAGMENT_CURSOR_LOADER) != null)
-            getActivity().getSupportLoaderManager().getLoader(SAVE_FRAGMENT_CURSOR_LOADER).forceLoad();
-
+        // для обновления списка.
+        if(mRecyclerView != null){
+            mRecyclerViewAdapter.addItem(map);
+        }
     }
 
     @Override

@@ -1,11 +1,13 @@
 package com.mezmeraiz.vkontakteaudioplayer.behaviors;
 
 import android.content.Context;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -13,41 +15,35 @@ import android.view.View;
  */
 public class FabBehavior  extends CoordinatorLayout.Behavior<FloatingActionButton>{
 
+    // На первом запуске активности FAB почему то мигает, перед тем, как стать невидимой,
+    // поэтому пришлось прикрутить сей костыль - на на первом запуске FAB убираем на 300 вниз
+    // и делаем firstLaunch true
+    private boolean firstLaunch;
+
     public FabBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
-        return dependency instanceof Snackbar.SnackbarLayout;
+        return dependency instanceof AppBarLayout || dependency instanceof Snackbar.SnackbarLayout;
     }
 
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
-        float translationY = Math.min(0, dependency.getTranslationY() - dependency.getHeight());
-        child.setTranslationY(translationY);
-        return true;
-    }
-
-    @Override
-    public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View directTargetChild, View target, int nestedScrollAxes) {
-        return target instanceof RecyclerView;
-    }
-
-    @Override
-    public boolean onNestedFling(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View target, float velocityX, float velocityY, boolean consumed) {
-
-        return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed);
-    }
-
-    @Override
-    public void onNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
-        if (dyConsumed > 0){
-            child.animate().translationY(83).setDuration(100);
-        }else {
-            child.animate().translationY(0).setDuration(100);
+        // Мониторим положение Snackbar и AppBarLayout и меняем соответствующе положение FAB
+        if (dependency instanceof Snackbar.SnackbarLayout){
+            float translationY = Math.min(0, dependency.getTranslationY() - dependency.getHeight());
+            child.setTranslationY(translationY);
+        }else if (dependency instanceof AppBarLayout){
+            if(!firstLaunch){
+                firstLaunch = true;
+                child.setTranslationY(300);
+                return true;
+            }
+            child.setTranslationY(dependency.getY() * -1);
         }
+        return true;
     }
 
 }

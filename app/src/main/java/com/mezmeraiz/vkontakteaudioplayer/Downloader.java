@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,8 +60,14 @@ public class Downloader {
         @Override
         protected void onPostExecute(String songPath) {
             super.onPostExecute(songPath);
-            mOnDataChangedListener.onDataChanged();
-            mDownloaderListener.onDownloadFinished(mId, mPosition);
+            Map <String ,String> map = new HashMap<String ,String >();
+            map.put(AudioHolder.TITLE, mSongName);
+            map.put(AudioHolder.URL, songPath);
+            map.put(AudioHolder.ARTIST, mBandName);
+            map.put(AudioHolder.DURATION, mDuration);
+            map.put(AudioHolder.ID, mId);
+            mOnDataChangedListener.onDataChanged(map);
+            mDownloaderListener.onDownloadFinished(mId, songPath, mPosition);
             Toast.makeText(mContext, mSongName + " загружено", Toast.LENGTH_SHORT).show();
         }
     }

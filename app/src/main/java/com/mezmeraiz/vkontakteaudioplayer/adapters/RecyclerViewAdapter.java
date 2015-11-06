@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,24 +15,30 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
+import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
+import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableItemViewHolder;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
+import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Адаптер для RecycleView
  */
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder>{
+public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> implements DraggableItemAdapter<RecyclerViewAdapter.RecyclerViewHolder> {
 
     public final static String POSITION = "POSITION";
     public final static String CURRENT_FRAGMENT = "CURRENT_FRAGMENT";
     public final static String STOP_PLAYING_FROM_ADAPTER = "STOP_PLAYING_FROM_ADAPTER"; // В PlayService
-    public final static String DECREASE_POSITION_FROM_ADAPTER = "DECREASE_POSITION_FROM_ADAPTER"; // В PlayService
-    private List<Map<String,String>> mAudioList;
+    public final static String CHANGE_POSITION_FROM_ADAPTER = "CHANGE_POSITION_FROM_ADAPTER"; // В PlayService
+    private LinkedList<Map<String,String>> mAudioList;
     private MainActivity mActivity;
     private int mPressedPosition = -1;
     private PopupMenuListener mPopupMenuListener;
@@ -42,7 +49,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private final int mWhiteColor = Color.parseColor("#FFFAFAFA");
 
     public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, PopupMenuListener popupMenuListener, int currentFragment) {
-        mAudioList = itemList;
+        setHasStableIds(true);
+        mAudioList = (LinkedList<Map<String, String>>) itemList;
         mCurrentFragment = currentFragment;
         mActivity = (MainActivity) activity;
         mGrayDotsDrawable = mActivity.getResources().getDrawable(R.drawable.dots_vertical_gray);
@@ -81,7 +89,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             }
         });
         // Если аудиозапись есть в сохраненных - ставим серую иконку на загрузку. Если нет - черную
-        if (mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getIdSet() != null && AudioHolder.getInstance().getIdSet().contains(mAudioList.get(i).get(AudioHolder.ID))){
+        if (mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getSavedMap() != null && AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get(i).get(AudioHolder.ID))){
             pressMenuImageView.setImageDrawable(mGrayDotsDrawable);
         }else{
             pressMenuImageView.setImageDrawable(mBlackDotsDrawable);
@@ -102,6 +110,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mPressedPosition = position;
     }
 
+    public void addItem(Map<String, String> map){
+        // Добавление нового итема в начало списка(Для SaveFragment)
+        mAudioList.addFirst(map);
+        if(mPressedPosition > -1)
+            mPressedPosition++;
+        notifyDataSetChanged();
+    }
+
+    public void onDataChanged(){
+        mAudioList = (LinkedList<Map<String, String>>) AudioHolder.getInstance().getList(mCurrentFragment);
+        notifyDataSetChanged();
+    }
+
     public void removePressedPosition(){
         // Снятие выделения с итема, после нажатия на итем в другом фрагменте
         mPressedPosition = -1;
@@ -115,14 +136,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         // broadcast в PlayService, чтобы там в объекте Player уменьшить позицию на 1
         // Если удаленная позиция равна позиции проигрывания - снимаем выделение итема и отправляем
         // broadcast на остановку MediaPlayer
-        AudioHolder.getInstance().getIdSet().remove(mAudioList.get(position).get(AudioHolder.ID));
+        AudioHolder.getInstance().getSavedMap().remove(mAudioList.get(position).get(AudioHolder.ID));
         mAudioList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(0, mAudioList.size());
         if(position < mPressedPosition){
             mPressedPosition--;
-            AudioHolder.getInstance().setList(mAudioList, AudioHolder.SAVED_FRAGMENT);
-            mContext.sendBroadcast(new Intent(DECREASE_POSITION_FROM_ADAPTER));
+            mContext.sendBroadcast(new Intent(CHANGE_POSITION_FROM_ADAPTER).putExtra(POSITION, mPressedPosition).putExtra(Player.CURRENT_FRAGMENT_KEY, mCurrentFragment));
         }else if(position == mPressedPosition){
             removePressedPosition();
             mContext.sendBroadcast(new Intent(STOP_PLAYING_FROM_ADAPTER));
@@ -134,7 +154,39 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return mAudioList.size();
     }
 
-    public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public long getItemId(int position) {
+        return Long.parseLong(mAudioList.get(position).get(AudioHolder.ID));
+    }
+
+    @Override
+    public boolean onCheckCanStartDrag(RecyclerViewHolder holder, int position, int x, int y) {
+        if (x > 450)
+            return true;
+        return false;
+    }
+
+    @Override
+    public ItemDraggableRange onGetItemDraggableRange(RecyclerViewHolder holder, int position) {
+        return null;
+    }
+
+    @Override
+    public void onMoveItem(int fromPosition, int toPosition) {
+        // Перемещаенм элемент в List и меняем mPressedPosition
+        mAudioList.add(toPosition, mAudioList.remove(fromPosition));
+        if(mPressedPosition == fromPosition){
+            mPressedPosition = toPosition;
+        }else if(mPressedPosition > fromPosition && mPressedPosition <= toPosition){
+            mPressedPosition--;
+        }else if(mPressedPosition < fromPosition && mPressedPosition >= toPosition){
+            mPressedPosition++;
+        }
+        mContext.sendBroadcast(new Intent(CHANGE_POSITION_FROM_ADAPTER).putExtra(POSITION, mPressedPosition).putExtra(Player.CURRENT_FRAGMENT_KEY, mCurrentFragment));
+        notifyItemMoved(fromPosition, toPosition);
+    }
+
+    public static class RecyclerViewHolder extends AbstractDraggableItemViewHolder {
 
         private TextView mBandTextView;
         private TextView mSongTextView;
@@ -151,5 +203,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             mSongTextView = (TextView) itemView.findViewById(R.id.song_name);
             mPressMenuImageView = (ImageView) itemView.findViewById(R.id.pressMenuImageView);
         }
+
     }
 }

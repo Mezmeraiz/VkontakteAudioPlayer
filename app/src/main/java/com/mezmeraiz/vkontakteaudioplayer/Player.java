@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.Log;
+
+import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -85,11 +89,12 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         mMediaPlayer.seekTo(progress * 1000);
     }
 
-    public void decreasePosition(){
-        // Метод уменьшает позицию проигрывания на 1 и обновляет список аудиозаписей после
-        // получения broadcast от RecyclerAdapter об удалении позиции списка
-        mPosition--;
-        mAudioList = AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
+    public void changePosition(int position, int currentFragment){
+        // Метод меняет позицию проигрывания после
+        // получения broadcast от RecyclerAdapter об изменении позиции списка
+        if(mCurrentFragment != currentFragment)
+            return;
+        mPosition = position;
     }
 
     public void release(){
@@ -133,7 +138,7 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        return false;
+        return true;
     }
 
     public void sendBroadcastStartPlaying(){
@@ -145,7 +150,7 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         intent.putExtra(POSITION_KEY, mPosition);
         intent.putExtra(DURATION_KEY, Integer.valueOf(mAudioList.get(mPosition).get(AudioHolder.DURATION)));
         intent.putExtra(PLAY_STATE_KEY, isPlaying);
-        intent.putExtra(PROGRESS_KEY, mMediaPlayer.getCurrentPosition()/1000);
+        intent.putExtra(PROGRESS_KEY, mMediaPlayer.getCurrentPosition() / 1000);
         mContext.sendBroadcast(intent);
     }
 
@@ -160,6 +165,11 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
             }
         };
         String source = mAudioList.get(mPosition).get(AudioHolder.URL);
+        // Если текущий фрагмент - Audio или Search, проверяем, есть ли данная аудиозапись в списке сохраненных
+        // Если да - на source ставим путь к сохраненному файлу
+        if ((mCurrentFragment == AudioHolder.AUDIO_FRAGMENT || mCurrentFragment == AudioHolder.SEARCH_FRAGMENT) && AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get(mPosition).get(AudioHolder.ID))){
+            source = AudioHolder.getInstance().getSavedMap().get(mAudioList.get(mPosition).get(AudioHolder.ID));
+        }
         mMediaPlayer = new MediaPlayer();
         try {
             mMediaPlayer.setDataSource(source);

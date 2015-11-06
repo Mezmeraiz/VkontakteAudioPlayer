@@ -2,6 +2,7 @@ package com.mezmeraiz.vkontakteaudioplayer;
 
 import android.database.Cursor;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,15 @@ public class AudioHolder {
     public final static int SAVED_FRAGMENT = 1;
     public final static int SEARCH_FRAGMENT = 2;
 
+    // Список с аудиозаписями из AudioFragment
     private List<Map<String,String>> mAudioList;
+    // Список с аудиозаписями из SaveFragment
     private List<Map<String,String>> mSavedList;
+    // Список с аудиозаписями из AudioFragment
     private List<Map<String,String>> mSearchList;
-    private Set<String> mIdSet;
+    // Map с сохраненными аудиозаписями.
+    // Ключ - id, значение - путь к аудиозаписи на диске
+    private Map<String, String> mSavedMap;
 
     private static AudioHolder instance;
 
@@ -71,12 +77,12 @@ public class AudioHolder {
         }
     }
 
-    public Set<String> getIdSet() {
-        return mIdSet;
+    public Map<String, String> getSavedMap() {
+        return mSavedMap;
     }
 
-    public void setIdSet(Set<String> idSet) {
-        this.mIdSet = idSet;
+    public void setSavedMap(Map<String, String> map) {
+        mSavedMap = map;
     }
 
 

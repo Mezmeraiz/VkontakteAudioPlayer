@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-//TODO После окончания загрузки список прыгает к проигрываемой композиции
+//TODO Разобраться с setList
 
 
 
@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         mTopFrameLayout = (FrameLayout) findViewById(R.id.top_frame_layout);
         mBottomFrameLayout = (FrameLayout) findViewById(R.id.bottom_frame_layout);
         mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
-        mFloatingActionButton.setTranslationY(300);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.setTitle("Мои аудиозаписи");
         setSupportActionBar(mToolbar);
@@ -203,7 +202,8 @@ public class MainActivity extends AppCompatActivity {
             case AudioHolder.SEARCH_FRAGMENT:
                 mSearchFragment.scrollToPosition(currentPosition);
                 break;
-        }
+            }
+
         mSongTextView.setText(currentList.get(currentPosition).get(AudioHolder.TITLE));
         mBandTextView.setText(currentList.get(currentPosition).get(AudioHolder.ARTIST));
         mSeekBar.setMax(intent.getIntExtra(Player.DURATION_KEY, 0));
