@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.CursorLoader;
 
+import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
 
@@ -23,7 +24,7 @@ public class SaveFragmentCursorLoader extends CursorLoader {
     public Cursor loadInBackground() {
         DB db = DB.getInstance();
         db.open(mContext);
-        Cursor cursor = db.getCursor(DBHelper.TABLE_NAME, null, null, null, null, null, null);
+        Cursor cursor = db.getCursor(DBHelper.TABLE_NAME, null, null, null, null, null, AudioHolder.ORDER);
         return cursor;
     }
 }

@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,12 +81,19 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                     public boolean onMenuItemClick(MenuItem item) {
                         // Удаление файла, строки из базы и итема из RecyclerView:
                         // Удаление файла с диска, записи из базы и элемента из списка в адаптере
-                        int position = (int) v.getTag();
                         mAudioList = (LinkedList<Map<String, String>>) AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
+                        final int position = (int) v.getTag();
+                        final int order = mAudioList.size() - position - 1;
+                        final long id = Long.parseLong(mAudioList.get(position).get(AudioHolder.ID));
                         if (mAudioList != null){
                             File file = new File(mAudioList.get(position).get(AudioHolder.URL));
                             file.delete();
-                            DB.getInstance().deleteSong(Long.parseLong(mAudioList.get(position).get(AudioHolder.ID)));
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    DB.getInstance().deleteSong(id, order);
+                                }
+                            }).start();
                             mRecyclerViewAdapter.removeItem(position);
                         }
                         return false;

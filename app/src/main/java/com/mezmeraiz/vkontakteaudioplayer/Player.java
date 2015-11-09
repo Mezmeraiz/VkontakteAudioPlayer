@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
 
+import com.mezmeraiz.vkontakteaudioplayer.ui.AudioFragment;
 import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
 
 import java.io.IOException;
@@ -95,6 +96,14 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         if(mCurrentFragment != currentFragment)
             return;
         mPosition = position;
+    }
+
+    public void incrementPosition(){
+        if(mCurrentFragment == AudioHolder.AUDIO_FRAGMENT){
+            mPosition++;
+            mContext.sendBroadcast(new Intent(AudioFragment.AUDIO_FRAGMENT_CHANGE_DATA));
+        }
+
     }
 
     public void release(){

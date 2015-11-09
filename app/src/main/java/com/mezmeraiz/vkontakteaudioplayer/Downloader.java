@@ -68,12 +68,12 @@ public class Downloader {
             map.put(AudioHolder.ID, mId);
             mOnDataChangedListener.onDataChanged(map);
             mDownloaderListener.onDownloadFinished(mId, songPath, mPosition);
-            Toast.makeText(mContext, mSongName + " загружено", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, mBandName + " - " + mSongName + " сохранено", Toast.LENGTH_SHORT).show();
         }
     }
 
 
-    private String loadRequest(){
+    private  String loadRequest(){
         // Загрузка аудиозаписи
         File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "VKplayer");
         if (!directory.exists()) {
@@ -89,7 +89,7 @@ public class Downloader {
                 File newSong = new File(songPath);
                 newSong.createNewFile();
                 DB db = DB.getInstance().open(mContext);
-                db.addNewSong(mId, mSongName, mBandName, songPath, mDuration);
+                db.addNewSong(mId, mSongName, mBandName, songPath, mDuration, AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT).size());
                 InputStream inputStream = new BufferedInputStream(connection.getInputStream());
                 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(newSong));
                 int read;

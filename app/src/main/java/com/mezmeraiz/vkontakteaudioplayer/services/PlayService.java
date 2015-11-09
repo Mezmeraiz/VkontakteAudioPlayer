@@ -19,6 +19,7 @@ import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
 public class PlayService extends Service {
 
     public static final String SEEKBAR_PRESSED_KEY = "SEEKBAR_PRESSED_KEY";
+    public final static String SEARCH_FRAGMENT_INCREMENT_POSITION = "com.mezmeraiz.vkontakteaudioplayer.SEARCH_FRAGMENT_INCREMENT_POSITION";
 
     private BroadcastReceiver mBroadcastReceiver;
     private Player mPlayer;
@@ -44,7 +45,9 @@ public class PlayService extends Service {
                 else if(intent.getAction().equals(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER))
                     onReceiveStopPlayingFromAdapter();
                 else if(intent.getAction().equals(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER))
-                    onReceiveDecreasePositionFromAdapter(intent);
+                    onReceiveChangePositionFromAdapter(intent);
+                else if(intent.getAction().equals(SEARCH_FRAGMENT_INCREMENT_POSITION))
+                    onReceiveIncrementPosition();
             }
         };
 
@@ -56,6 +59,7 @@ public class PlayService extends Service {
         intentFilter.addAction(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION);
         intentFilter.addAction(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER);
         intentFilter.addAction(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER);
+        intentFilter.addAction(SEARCH_FRAGMENT_INCREMENT_POSITION);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
     }
@@ -115,10 +119,17 @@ public class PlayService extends Service {
         mPlayer.release();
     }
 
-    private void onReceiveDecreasePositionFromAdapter(Intent intent){
+    private void onReceiveChangePositionFromAdapter(Intent intent){
         // Во фрагменте изменена позиция до позиции проигрывания -
         // - меняем позицию в Player
         mPlayer.changePosition(intent.getIntExtra(RecyclerViewAdapter.POSITION, 0), intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0));
+    }
+
+    private void onReceiveIncrementPosition(){
+        // Из SearchFragment в AudioFragment добавлена аудиозапись
+        // Если в данный момент проигрывается лист AudioFragment
+        // Увеличивает позицию на 1
+        mPlayer.incrementPosition();
     }
 
 

@@ -32,6 +32,7 @@ import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
+import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.api.VKError;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
@@ -50,6 +51,7 @@ import java.util.Map;
  * Фрагмент для поиска
  */
 public class SearchFragment extends Fragment implements OnRestartActivityListener{
+
 
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
@@ -89,16 +91,23 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
             @Override
             public void onClickPopupMenu(final View v) {
                 PopupMenu popupMenu = new PopupMenu(getActivity(), v);
-                popupMenu.inflate(R.menu.menu_audio_fragment_popup);
+                popupMenu.inflate(R.menu.menu_search_fragment_popup);
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         // Проверяем, сохранена ли уже аудиозапись.
                         // Если нет - сохраняем
-                        if (AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))){
-                            Toast.makeText(mContext, "Уже загружено", Toast.LENGTH_SHORT).show();
-                        }else{
-                            new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
+                        switch (item.getItemId()){
+                            case R.id.save:
+                                if (AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))){
+                                    Toast.makeText(mContext, "Уже сохранено", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
+                                }
+                                break;
+                            case R.id.copy:
+                                moveToMyAudios((Integer) v.getTag());
+                                break;
                         }
                         return false;
                     }
@@ -109,6 +118,16 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
+    }
+
+    private void moveToMyAudios(int position){
+        // Добавление аудиозаписи в список AudioFragment
+        ((LinkedList<Map<String,String>>)AudioHolder.getInstance().getList(AudioHolder.AUDIO_FRAGMENT)).addFirst(mAudioList.get(position));
+        mContext.sendBroadcast(new Intent(PlayService.SEARCH_FRAGMENT_INCREMENT_POSITION));
+        int audioId = Integer.parseInt(mAudioList.get(position).get(AudioHolder.ID));
+        int ownerId = Integer.parseInt(mAudioList.get(position).get(AudioHolder.OWNER_ID));
+        VKRequest vkRequest = new VKRequest("audio.add", VKParameters.from("audio_id", audioId, "owner_id", ownerId));
+        vkRequest.executeWithListener(new VKRequest.VKRequestListener() {});
     }
 
 
@@ -172,6 +191,7 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
                         map.put(AudioHolder.TITLE, oneAudioObject.getString(AudioHolder.TITLE));
                         map.put(AudioHolder.URL, oneAudioObject.getString(AudioHolder.URL));
                         map.put(AudioHolder.DURATION, oneAudioObject.getString(AudioHolder.DURATION));
+                        map.put(AudioHolder.OWNER_ID, oneAudioObject.getString(AudioHolder.OWNER_ID));
                         mAudioList.add(map);
                     }
                     AudioHolder.getInstance().setList(mAudioList, AudioHolder.SEARCH_FRAGMENT);
@@ -179,16 +199,6 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }
-
-            @Override
-            public void attemptFailed(VKRequest request, int attemptNumber, int totalAttempts) {
-                super.attemptFailed(request, attemptNumber, totalAttempts);
-            }
-
-            @Override
-            public void onError(VKError error) {
-                super.onError(error);
             }
         });
     }

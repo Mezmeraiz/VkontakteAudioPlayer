@@ -20,7 +20,10 @@ public class DBHelper extends SQLiteOpenHelper{
             AudioHolder.TITLE + " text," +
             AudioHolder.ARTIST + " text," +
             AudioHolder.PATH + " text," +
-            AudioHolder.DURATION + " text);";
+            AudioHolder.DURATION + " text," +
+            AudioHolder.ORDER + " integer);";
+
+    //private static final String c = "CREATE TABLE SongTable(id text,title text,artist text,path text,duration text,the_order integer);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

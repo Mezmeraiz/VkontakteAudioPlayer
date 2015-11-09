@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mFloatingActionButton;
     private boolean isStarted;// Становится true при первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
 
+    //TODO OnDataChange в SaveFragment переделать на broadcast
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

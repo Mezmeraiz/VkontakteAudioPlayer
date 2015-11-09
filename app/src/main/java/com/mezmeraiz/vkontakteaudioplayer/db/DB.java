@@ -49,19 +49,39 @@ public class DB {
         }
     }
 
-    public void addNewSong(String id, String songName, String bandName, String path, String duration){
+    public void addNewSong(String id, String songName, String bandName, String path, String duration, int order){
         ContentValues cv = new ContentValues();
         cv.put(AudioHolder.ID, id);
         cv.put(AudioHolder.TITLE, songName);
         cv.put(AudioHolder.ARTIST, bandName);
         cv.put(AudioHolder.PATH, path);
         cv.put(AudioHolder.DURATION, duration);
+        cv.put(AudioHolder.ORDER, order);
         mSQLiteDatabase.insert(DBHelper.TABLE_NAME,null,cv);
     }
 
-    public void deleteSong(long id){
+    public synchronized void deleteSong(long id, int deletedOrder){
+        String query = "UPDATE SongTable SET song_order = song_order - 1 WHERE song_order > " + deletedOrder;
         mSQLiteDatabase.delete(DBHelper.TABLE_NAME, AudioHolder.ID + " = " + id, null);
+        Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
+        cursor.moveToFirst();
 
+    }
+
+    public synchronized void moveSong(int fromPosition, int toPosition, int id){
+        // Изменение поля song_order в db
+        if(fromPosition > toPosition){
+            String query = "UPDATE SongTable SET song_order = song_order + 1 WHERE song_order >= " + toPosition + " AND song_order < " + fromPosition;
+            Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
+            cursor.moveToFirst();
+        }else{
+            String query = "UPDATE SongTable SET song_order = song_order - 1 WHERE song_order <= " + toPosition + " AND song_order > " + fromPosition;
+            Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
+            cursor.moveToFirst();
+        }
+        String query = "UPDATE SongTable SET song_order = " + toPosition + " WHERE id = " + id;
+        Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
+        cursor.moveToFirst();
     }
 
 
