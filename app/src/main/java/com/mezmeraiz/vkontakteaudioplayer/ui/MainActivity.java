@@ -4,14 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
@@ -24,7 +22,6 @@ import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
-import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
 import java.util.ArrayList;
@@ -192,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         // По сигналу из сервиса о новой композиции заполняем view
         int currentFragment = intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0);
         int currentPosition = intent.getIntExtra(Player.POSITION_KEY, 0);
-        List<Map<String, String>> currentList = AudioHolder.getInstance().getList(currentFragment);
         switch (currentFragment){
             case AudioHolder.AUDIO_FRAGMENT:
                 mAudioFragment.scrollToPosition(currentPosition);
@@ -204,9 +200,8 @@ public class MainActivity extends AppCompatActivity {
                 mSearchFragment.scrollToPosition(currentPosition);
                 break;
             }
-
-        mSongTextView.setText(currentList.get(currentPosition).get(AudioHolder.TITLE));
-        mBandTextView.setText(currentList.get(currentPosition).get(AudioHolder.ARTIST));
+        mSongTextView.setText(intent.getStringExtra(Player.TITLE_KEY));
+        mBandTextView.setText(intent.getStringExtra(Player.ARTIST_KEY));
         mSeekBar.setMax(intent.getIntExtra(Player.DURATION_KEY, 0));
         mSeekBar.setProgress(intent.getIntExtra(Player.PROGRESS_KEY, 0));
         mSeekBar.setSecondaryProgress(0);

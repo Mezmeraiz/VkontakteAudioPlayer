@@ -1,12 +1,7 @@
 package com.mezmeraiz.vkontakteaudioplayer;
 
-import android.database.Cursor;
-
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Класс для хранения текущих списков аудиозаписей

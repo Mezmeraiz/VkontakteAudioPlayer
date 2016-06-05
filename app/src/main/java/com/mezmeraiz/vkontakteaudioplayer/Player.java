@@ -6,9 +6,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
 
-import com.mezmeraiz.vkontakteaudioplayer.ui.AudioFragment;
-import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +22,16 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
     public static final String FAB_PRESSED_BACK_ACTION = "com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_BACK_ACTION";//Информирование MainActivity для смены значка fab
     public static final String SEEKBAR_PROGRESS_ACTION = "com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PROGRESS_ACTION";//Информирование MainActivity для смены прогресса SeekBar
     public static final String SEEKBAR_BUFFERING_ACTION = "com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_BUFFERING_ACTION";//Информирование MainActivity для смены значка fab
-    public static final String SEEKBAR_PROGRESS_KEY = "SEEKBAR_PROGRESS_KEY";
+
     public static final String CURRENT_FRAGMENT_KEY = "CURRENT_FRAGMENT_KEY";
     public static final String POSITION_KEY = "POSITION_KEY";
     public static final String DURATION_KEY = "DURATION_KEY";
     public static final String PROGRESS_KEY = "PROGRESS_KEY";
+    public static final String ARTIST_KEY = "ARTIST_KEY";
+    public static final String TITLE_KEY = "TITLE_KEY";
     public static final String PLAY_STATE_KEY = "PLAY_STATE_KEY";
     public static final String SEEKBAR_BUFFERING_KEY = "SEEKBAR_BUFFERING_KEY";
+    public static final String SEEKBAR_PROGRESS_KEY = "SEEKBAR_PROGRESS_KEY";
     public static final String FAB_STATE_KEY = "FAB_STATE_KEY";
 
     private List<Map<String, String>> mAudioList;
@@ -98,13 +98,16 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         mPosition = position;
     }
 
-    public void incrementPosition(){
-        if(mCurrentFragment == AudioHolder.AUDIO_FRAGMENT){
-            mPosition++;
-            mContext.sendBroadcast(new Intent(AudioFragment.AUDIO_FRAGMENT_CHANGE_DATA));
-        }
-
+    public void incPosition(){
+        if(mPosition < mAudioList.size() - 1)
+            newTask(++mPosition, mCurrentFragment);
     }
+
+    public void decPosition(){
+        if(mPosition > 0)
+            newTask(--mPosition, mCurrentFragment);
+    }
+
 
     public void release(){
         if (mTimerTask !=null){
@@ -151,12 +154,14 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
     }
 
     public void sendBroadcastStartPlaying(){
-        // Отправка в MainActivity данных о начале проигрывания новой композиции
+        // Отправка в MainActivity и виджет данных о начале проигрывания новой композиции
         if (mMediaPlayer == null)
             return;
         Intent intent = new Intent(START_PLAYING_ACTION);
         intent.putExtra(CURRENT_FRAGMENT_KEY, mCurrentFragment);
         intent.putExtra(POSITION_KEY, mPosition);
+        intent.putExtra(ARTIST_KEY, mAudioList.get(mPosition).get(AudioHolder.ARTIST));
+        intent.putExtra(TITLE_KEY, mAudioList.get(mPosition).get(AudioHolder.TITLE));
         intent.putExtra(DURATION_KEY, Integer.valueOf(mAudioList.get(mPosition).get(AudioHolder.DURATION)));
         intent.putExtra(PLAY_STATE_KEY, isPlaying);
         intent.putExtra(PROGRESS_KEY, mMediaPlayer.getCurrentPosition() / 1000);
@@ -194,14 +199,14 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
     }
 
     private void sendBroadcastPressedBack(){
-        // Отправка сигнала в MainActivity на переключение иконки
+        // Отправка сигнала в MainActivity и в виджет на переключение иконки
         Intent intent = new Intent(FAB_PRESSED_BACK_ACTION);
         intent.putExtra(FAB_STATE_KEY, isPlaying);
         mContext.sendBroadcast(intent);
     }
 
     private void sendBroadcastSeekBarProgress(int progress){
-        // Отправка в MainActivity прогресса SeekBar
+        // Отправка в MainActivity и в виджет прогресса SeekBar
         Intent intent = new Intent(SEEKBAR_PROGRESS_ACTION);
         intent.putExtra(SEEKBAR_PROGRESS_KEY, progress);
         mContext.sendBroadcast(intent);
@@ -213,4 +218,5 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         intent.putExtra(SEEKBAR_BUFFERING_KEY, percent);
         mContext.sendBroadcast(intent);
     }
+
 }

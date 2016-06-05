@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +22,6 @@ import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropM
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.Downloader;
 import com.mezmeraiz.vkontakteaudioplayer.DownloaderListener;
-import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
 import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
@@ -40,7 +38,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,7 +48,6 @@ import java.util.Map;
  */
 public class AudioFragment extends Fragment implements OnRestartActivityListener{
 
-    public final static String AUDIO_FRAGMENT_CHANGE_DATA = "com.mezmeraiz.vkontakteaudioplayer.AUDIO_FRAGMENT_CHANGE_DATA"; // Сигнал из SearchFragment о добавлении новой аудиозаписи
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mWrappedAdapter;
@@ -75,8 +71,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
             public void onReceive(Context context, Intent intent) {
                 if(intent.getAction().equals(Player.START_PLAYING_ACTION))
                     onReceiveStartPlaying(intent);
-                else if(intent.getAction().equals(AUDIO_FRAGMENT_CHANGE_DATA))
-                    onReceiveChangeData();
             }
         };
         mDownloaderListener = new DownloaderListener() {
@@ -100,7 +94,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
                             Toast.makeText(mContext, "Уже сохранено", Toast.LENGTH_SHORT).show();
                         }else{
                             new Downloader(mContext).download(AudioHolder.AUDIO_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
-                            //Snackbar.make(v, "Загружается", Snackbar.LENGTH_SHORT).show();
                         }
                         return false;
                     }
@@ -111,7 +104,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
-        intentFilter.addAction(AUDIO_FRAGMENT_CHANGE_DATA);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
@@ -144,14 +136,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
             mRecyclerViewAdapter.removePressedPosition();
         }
         mRecyclerViewAdapter.notifyDataSetChanged();
-    }
-
-    private void onReceiveChangeData(){
-        // Из PlayService пришел сигнал о добавлении новой аудиозаписи в мои аудизаписи
-        // Обновляем список
-        if(mRecyclerViewAdapter != null){
-            mRecyclerViewAdapter.incrementPressedPosition();
-        }
     }
 
     @Override

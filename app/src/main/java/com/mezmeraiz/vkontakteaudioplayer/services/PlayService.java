@@ -7,10 +7,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+
+import com.mezmeraiz.vkontakteaudioplayer.PlayWidget;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
-import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
 
 
 /**
@@ -19,8 +20,6 @@ import com.mezmeraiz.vkontakteaudioplayer.ui.SaveFragment;
 public class PlayService extends Service {
 
     public static final String SEEKBAR_PRESSED_KEY = "SEEKBAR_PRESSED_KEY";
-    public final static String SEARCH_FRAGMENT_INCREMENT_POSITION = "com.mezmeraiz.vkontakteaudioplayer.SEARCH_FRAGMENT_INCREMENT_POSITION";
-
     private BroadcastReceiver mBroadcastReceiver;
     private Player mPlayer;
 
@@ -46,8 +45,11 @@ public class PlayService extends Service {
                     onReceiveStopPlayingFromAdapter();
                 else if(intent.getAction().equals(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER))
                     onReceiveChangePositionFromAdapter(intent);
-                else if(intent.getAction().equals(SEARCH_FRAGMENT_INCREMENT_POSITION))
-                    onReceiveIncrementPosition();
+                else if(intent.getAction().equals(PlayWidget.NEXT_WIDGET_ACTION))
+                    onReceiveChangeFromWidget(true);
+                else if(intent.getAction().equals(PlayWidget.PREV_WIDGET_ACTION))
+                    onReceiveChangeFromWidget(false);
+
             }
         };
 
@@ -59,7 +61,8 @@ public class PlayService extends Service {
         intentFilter.addAction(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION);
         intentFilter.addAction(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER);
         intentFilter.addAction(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER);
-        intentFilter.addAction(SEARCH_FRAGMENT_INCREMENT_POSITION);
+        intentFilter.addAction(PlayWidget.NEXT_WIDGET_ACTION);
+        intentFilter.addAction(PlayWidget.PREV_WIDGET_ACTION);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
     }
@@ -83,11 +86,12 @@ public class PlayService extends Service {
 
     private void onReceiveDestroy(){
         // Сигнал о закрытии MainActivity. Если плеер остановлен(isPlaying == false),
-        // закрываем плеер и уничтожаем сервис
+        // закрываем плеер, уничтожаем сервис и отправляем broadcast в виджет
         if(!mPlayer.isPlaying()){
             mPlayer.release();
             mPlayer = null;
             stopSelf();
+            sendBroadcast(new Intent(PlayWidget.DESTROY_WIDGET_ACTION));
         }
     }
 
@@ -125,12 +129,17 @@ public class PlayService extends Service {
         mPlayer.changePosition(intent.getIntExtra(RecyclerViewAdapter.POSITION, 0), intent.getIntExtra(Player.CURRENT_FRAGMENT_KEY, 0));
     }
 
-    private void onReceiveIncrementPosition(){
-        // Из SearchFragment в AudioFragment добавлена аудиозапись
-        // Если в данный момент проигрывается лист AudioFragment
-        // Увеличивает позицию на 1
-        mPlayer.incrementPosition();
+    private void onReceiveChangeFromWidget(boolean next){
+        // Увеличение/уменьшение позиции по сигналу из виджета
+        if (next)
+            mPlayer.incPosition();
+        else
+            mPlayer.decPosition();
     }
+
+
+
+
 
 
 }

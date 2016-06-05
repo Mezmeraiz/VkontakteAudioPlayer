@@ -4,8 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.provider.MediaStore;
-import android.util.Log;
 
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 

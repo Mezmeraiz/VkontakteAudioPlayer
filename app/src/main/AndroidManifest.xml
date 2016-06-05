@@ -3,7 +3,7 @@
     package="com.mezmeraiz.vkontakteaudioplayer" >
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -25,7 +25,9 @@
             android:name=".ui.MainActivity"
             android:screenOrientation="portrait" />
 
-        <service android:name=".services.PlayService" >
+        <service
+            android:name=".services.PlayService"
+            >
             <intent-filter>
                 <action android:name="com.mezmeraiz.vkontakteaudioplayer.START_SERVICE_ACTION" />
             </intent-filter>
@@ -34,6 +36,11 @@
         <receiver android:name=".PlayWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_BACK_ACTION" />
+                <action android:name="com.mezmeraiz.vkontakteaudioplayer.START_PLAYING_ACTION" />
+                <action android:name="com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PROGRESS_ACTION" />
+                <action android:name="com.mezmeraiz.vkontakteaudioplayer.DESTROY_WIDGET_ACTION" />
+                <action android:name="com.mezmeraiz.vkontakteaudioplayer.CLICK_WIDGET_ACTION" />
             </intent-filter>
 
             <meta-data

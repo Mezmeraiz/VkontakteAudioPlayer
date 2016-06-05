@@ -11,19 +11,15 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
-import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.Downloader;
 import com.mezmeraiz.vkontakteaudioplayer.DownloaderListener;
@@ -32,8 +28,6 @@ import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
-import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
-import com.vk.sdk.api.VKError;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
@@ -105,9 +99,6 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
                                     new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
                                 }
                                 break;
-                            case R.id.copy:
-                                moveToMyAudios((Integer) v.getTag());
-                                break;
                         }
                         return false;
                     }
@@ -118,16 +109,6 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
-    }
-
-    private void moveToMyAudios(int position){
-        // Добавление аудиозаписи в список AudioFragment
-        ((LinkedList<Map<String,String>>)AudioHolder.getInstance().getList(AudioHolder.AUDIO_FRAGMENT)).addFirst(mAudioList.get(position));
-        mContext.sendBroadcast(new Intent(PlayService.SEARCH_FRAGMENT_INCREMENT_POSITION));
-        int audioId = Integer.parseInt(mAudioList.get(position).get(AudioHolder.ID));
-        int ownerId = Integer.parseInt(mAudioList.get(position).get(AudioHolder.OWNER_ID));
-        VKRequest vkRequest = new VKRequest("audio.add", VKParameters.from("audio_id", audioId, "owner_id", ownerId));
-        vkRequest.executeWithListener(new VKRequest.VKRequestListener() {});
     }
 
 

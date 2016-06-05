@@ -4,10 +4,6 @@
         android:id="@+id/save"
         android:title="Cохранить"
         />
-    <item
-        android:id="@+id/copy"
-        android:title="Копировать в мои аудиозаписи"
-        />
 
 
 </menu>
