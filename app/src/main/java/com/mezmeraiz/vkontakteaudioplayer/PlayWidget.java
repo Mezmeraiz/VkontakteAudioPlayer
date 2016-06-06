@@ -7,9 +7,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.widget.RemoteViews;
-
+import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 
 /**
@@ -25,8 +24,6 @@ public class PlayWidget extends AppWidgetProvider {
     public final static String WIDGET_PREF = "WIDGET_PREF";
     public final static String DESTROY_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.DESTROY_WIDGET_ACTION";
     public final static String CLICK_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.CLICK_WIDGET_ACTION";
-    public final static String NEXT_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.NEXT_WIDGET_ACTION";
-    public final static String PREV_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.PREV_WIDGET_ACTION";
     public final static String PLAY_BUTTON_KEY = "PLAY_BUTTON_KEY";
     public final static String PREV_BUTTON_KEY = "PREV_BUTTON_KEY";
     public final static String NEXT_BUTTON_KEY = "NEXT_BUTTON_KEY";
@@ -45,7 +42,6 @@ public class PlayWidget extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
         // Установка на виджет данных о проигрываемой композиции
-
         SharedPreferences sharedPreferences = context.getSharedPreferences(WIDGET_PREF, Context.MODE_PRIVATE);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.play_widget);
         views.setOnClickPendingIntent(R.id.imageViewWidgetPlay, createPendingIntent(context, PLAY_BUTTON_KEY));
@@ -105,9 +101,9 @@ public class PlayWidget extends AppWidgetProvider {
                 if (intent.hasCategory(PLAY_BUTTON_KEY)){
                     context.sendBroadcast(new Intent(MainActivity.FAB_PRESSED_SERVICE_ACTION));
                 }else if(intent.hasCategory(PREV_BUTTON_KEY)){
-                    context.sendBroadcast(new Intent(PREV_WIDGET_ACTION));
+                    context.sendBroadcast(new Intent(PlayService.PREV_SERVICE_ACTION));
                 }else if(intent.hasCategory(NEXT_BUTTON_KEY)){
-                    context.sendBroadcast(new Intent(NEXT_WIDGET_ACTION));
+                    context.sendBroadcast(new Intent(PlayService.NEXT_SERVICE_ACTION));
                 }
                 break;
         }

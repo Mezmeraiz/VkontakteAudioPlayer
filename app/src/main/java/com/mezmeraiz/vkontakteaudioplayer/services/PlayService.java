@@ -1,15 +1,25 @@
 package com.mezmeraiz.vkontakteaudioplayer.services;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.widget.RemoteViews;
 
+import com.mezmeraiz.vkontakteaudioplayer.PlayNotification;
 import com.mezmeraiz.vkontakteaudioplayer.PlayWidget;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
+import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 
@@ -20,6 +30,8 @@ import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 public class PlayService extends Service {
 
     public static final String SEEKBAR_PRESSED_KEY = "SEEKBAR_PRESSED_KEY";
+    public final static String NEXT_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.NEXT_SERVICE_ACTION";
+    public final static String PREV_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.PREV_SERVICE_ACTION";
     private BroadcastReceiver mBroadcastReceiver;
     private Player mPlayer;
 
@@ -45,9 +57,9 @@ public class PlayService extends Service {
                     onReceiveStopPlayingFromAdapter();
                 else if(intent.getAction().equals(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER))
                     onReceiveChangePositionFromAdapter(intent);
-                else if(intent.getAction().equals(PlayWidget.NEXT_WIDGET_ACTION))
+                else if(intent.getAction().equals(NEXT_SERVICE_ACTION))
                     onReceiveChangeFromWidget(true);
-                else if(intent.getAction().equals(PlayWidget.PREV_WIDGET_ACTION))
+                else if(intent.getAction().equals(PREV_SERVICE_ACTION))
                     onReceiveChangeFromWidget(false);
 
             }
@@ -61,8 +73,8 @@ public class PlayService extends Service {
         intentFilter.addAction(MainActivity.REQUEST_DATA_FROM_SERVICE_ACTION);
         intentFilter.addAction(RecyclerViewAdapter.STOP_PLAYING_FROM_ADAPTER);
         intentFilter.addAction(RecyclerViewAdapter.CHANGE_POSITION_FROM_ADAPTER);
-        intentFilter.addAction(PlayWidget.NEXT_WIDGET_ACTION);
-        intentFilter.addAction(PlayWidget.PREV_WIDGET_ACTION);
+        intentFilter.addAction(NEXT_SERVICE_ACTION);
+        intentFilter.addAction(PREV_SERVICE_ACTION);
         registerReceiver(mBroadcastReceiver, intentFilter);
 
     }
@@ -86,12 +98,13 @@ public class PlayService extends Service {
 
     private void onReceiveDestroy(){
         // Сигнал о закрытии MainActivity. Если плеер остановлен(isPlaying == false),
-        // закрываем плеер, уничтожаем сервис и отправляем broadcast в виджет
+        // закрываем плеер, уничтожаем сервис и отправляем broadcast в виджет и в уведомление
         if(!mPlayer.isPlaying()){
             mPlayer.release();
             mPlayer = null;
             stopSelf();
             sendBroadcast(new Intent(PlayWidget.DESTROY_WIDGET_ACTION));
+            sendBroadcast(new Intent(PlayNotification.CANCEL_NOTIFICATION_ACTION));
         }
     }
 
@@ -106,7 +119,6 @@ public class PlayService extends Service {
         // В MainAcyivity нажата fab - включаем/выключаем MediaPlayer
         mPlayer.onFabPressed();
     }
-
 
     private void onReceiveSeekBarPressed(Intent intent){
         // В MainAcyivity нажат SeekBar - меняем прогресс MediaPlayer
@@ -130,16 +142,11 @@ public class PlayService extends Service {
     }
 
     private void onReceiveChangeFromWidget(boolean next){
-        // Увеличение/уменьшение позиции по сигналу из виджета
+        // Увеличение/уменьшение позиции по сигналу из виджета и уведомления
         if (next)
             mPlayer.incPosition();
         else
             mPlayer.decPosition();
     }
-
-
-
-
-
 
 }
