@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(Player.SEEKBAR_PROGRESS_ACTION);
         intentFilter.addAction(Player.SEEKBAR_BUFFERING_ACTION);
         registerReceiver(mBroadcastReceiver, intentFilter);
-        startService(new Intent(START_SERVICE_ACTION));
+        startService(new Intent(this, PlayService.class));
     }
 
     private void setViewPager(){
