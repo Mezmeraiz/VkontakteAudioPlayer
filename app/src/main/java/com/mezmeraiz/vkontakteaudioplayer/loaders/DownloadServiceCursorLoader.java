@@ -1,21 +1,21 @@
 package com.mezmeraiz.vkontakteaudioplayer.loaders;
 
 import android.content.Context;
+import android.content.CursorLoader;
 import android.database.Cursor;
-import android.support.v4.content.CursorLoader;
 
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
 
 /**
- * CursorLoader для SaveFragment
+ * Created by pc on 23.06.2016.
  */
-public class SaveFragmentCursorLoader extends CursorLoader {
+public class DownloadServiceCursorLoader extends CursorLoader {
 
     Context mContext;
 
-    public SaveFragmentCursorLoader(Context context) {
+    public DownloadServiceCursorLoader(Context context) {
         super(context);
         mContext = context;
     }
@@ -24,7 +24,7 @@ public class SaveFragmentCursorLoader extends CursorLoader {
     public Cursor loadInBackground() {
         DB db = DB.getInstance();
         db.open(mContext);
-        Cursor cursor = db.getCursor(DBHelper.SONG_TABLE_NAME, null, null, null, null, null, AudioHolder.ORDER);
+        Cursor cursor = db.getCursor(DBHelper.DOWNLOAD_TABLE_NAME, null, null, null, null, null, null);
         return cursor;
     }
 }

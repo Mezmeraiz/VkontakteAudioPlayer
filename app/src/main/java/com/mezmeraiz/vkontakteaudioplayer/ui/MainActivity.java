@@ -18,23 +18,21 @@ import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
-import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
+import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-//TODO Разобраться с setList
+
+
 
 
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String START_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.START_SERVICE_ACTION";//Action для запуска сервиса
     public static final String DESTROY_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.DESTROY_SERVICE_ACTION";//Broadcast на уничтожение сервиса
     public static final String NEW_TASK_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.NEW_TASK_SERVICE_ACTION";//Сигнал из фрагмента о нажатии на новую композицию
     public static final String FAB_PRESSED_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_SERVICE_ACTION";//Сигнал в сервис о нажатии на fab
@@ -56,11 +54,12 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mFloatingActionButton;
     private boolean isStarted;// Становится true при первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
 
-    //TODO OnDataChange в SaveFragment переделать на broadcast
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //DB.getInstance().open(this).deleteAll();
         setContentView(R.layout.activity_main);
         sendBroadcastRequestData();
         mSongTextView = (TextView) findViewById(R.id.songTextView);
@@ -131,9 +130,9 @@ public class MainActivity extends AppCompatActivity {
         fragmentList.add(mSaveFragment);
         fragmentList.add(mSearchFragment);
         ArrayList<Integer> iconList = new ArrayList<Integer>();
-        iconList.add(R.drawable.music_note);
-        iconList.add(R.drawable.download_icon);
-        iconList.add(R.drawable.magnify);
+        iconList.add(R.drawable.vd_music_note);
+        iconList.add(R.drawable.vd_download_white);
+        iconList.add(R.drawable.vd_magnify);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
         mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), this);
         mViewPagerAdapter.setFragmentList(fragmentList, iconList);
@@ -179,9 +178,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeFabIcon(boolean fabState){
         if(fabState){
-            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause24));
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause));
         }else{
-            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play24));
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play));
         }
     }
 
@@ -206,9 +205,9 @@ public class MainActivity extends AppCompatActivity {
         mSeekBar.setProgress(intent.getIntExtra(Player.PROGRESS_KEY, 0));
         mSeekBar.setSecondaryProgress(0);
         if(intent.getBooleanExtra(Player.PLAY_STATE_KEY, true)){
-            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause24));
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.pause));
         }else{
-            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play24));
+            mFloatingActionButton.setImageDrawable(getResources().getDrawable(R.drawable.play));
         }
         if(!isStarted)
             mFloatingActionButton.setTranslationY(mTopFrameLayout.getTranslationY());
@@ -288,13 +287,6 @@ public class MainActivity extends AppCompatActivity {
         return mViewPager.getCurrentItem();
     }
 
-    public OnDataChangedListener getOnDataChangedListener(){
-        // Возвращает Listener из SaveFragment
-        if (mSaveFragment instanceof OnDataChangedListener){
-            return mSaveFragment;
-        }else{
-            throw new IllegalArgumentException("SaveFragment should implement OnDataChangedListener");
-        }
-    }
+
 
 }

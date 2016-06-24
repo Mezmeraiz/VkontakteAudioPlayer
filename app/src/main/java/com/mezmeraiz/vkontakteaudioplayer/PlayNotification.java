@@ -67,7 +67,7 @@ public class PlayNotification extends BroadcastReceiver{
         view.setOnClickPendingIntent(R.id.imageViewNotifPlay, createPendingIntent(MainActivity.FAB_PRESSED_SERVICE_ACTION));
         view.setOnClickPendingIntent(R.id.imageViewNotifClose, createPendingIntent(CANCEL_NOTIFICATION_ACTION));
         Notification notification = new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.drawable.play24)
+                .setSmallIcon(R.drawable.play)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setOngoing(true)
                 .build();

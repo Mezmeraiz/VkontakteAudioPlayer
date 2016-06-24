@@ -13,17 +13,26 @@ import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 public class DBHelper extends SQLiteOpenHelper{
 
     private static final String DATABASE_NAME = "VKplayer_Database";
-    public static final String TABLE_NAME = "SongTable";
-    private static final int DATABASE_VERSION = 1;
-    private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" +
+    public static final String SONG_TABLE_NAME = "SongTable";
+    public static final String DOWNLOAD_TABLE_NAME = "DownloadTable";
+    private static final int DATABASE_VERSION = 2;
+    private static final String CREATE_SONG_TABLE = "CREATE TABLE " + SONG_TABLE_NAME + "(" +
             AudioHolder.ID + " text," +
             AudioHolder.TITLE + " text," +
             AudioHolder.ARTIST + " text," +
             AudioHolder.PATH + " text," +
             AudioHolder.DURATION + " text," +
             AudioHolder.ORDER + " integer);";
+    private static final String CREATE_DOWNLOAD_TABLE = "CREATE TABLE " + DOWNLOAD_TABLE_NAME + "(" +
+            AudioHolder.ID + " text," +
+            AudioHolder.TITLE + " text," +
+            AudioHolder.ARTIST + " text," +
+            AudioHolder.DURATION + " text," +
+            AudioHolder.URL + " text," +
+            AudioHolder.PROGRESS + " integer);";
 
     //private static final String c = "CREATE TABLE SongTable(id text,title text,artist text,path text,duration text,the_order integer);";
+    //private static final String c = "CREATE TABLE SongTable(id text,path text,progress integer);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -31,13 +40,15 @@ public class DBHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE);
-        Log.d("myLogs", CREATE_TABLE);
+        db.execSQL(CREATE_SONG_TABLE);
+        db.execSQL(CREATE_DOWNLOAD_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        if(oldVersion == 1 && newVersion == 2){
+            db.execSQL(CREATE_DOWNLOAD_TABLE);
+        }
     }
 
 }

@@ -64,7 +64,6 @@ public class LoginActivity extends AppCompatActivity{
     VKSdkListener listener = new VKSdkListener() {
         @Override
         public void onCaptchaError(VKError captchaError) {
-            new VKCaptchaDialog(captchaError).show();
         }
 
         @Override
@@ -72,7 +71,6 @@ public class LoginActivity extends AppCompatActivity{
             super.onReceiveNewToken(newToken);
             // Получение нового токена после авторицации и запуск активности
             startMainActivity();
-
         }
 
         @Override
@@ -90,15 +88,12 @@ public class LoginActivity extends AppCompatActivity{
 
         @Override
         public void onAccessDenied(VKError authorizationError) {
-            new AlertDialog.Builder(VKUIHelper.getTopActivity())
-                    .setMessage(authorizationError.toString())
-                    .show();
         }
     };
 
     private void authorize(){
         // Запускаем авторизацию со списком разрешений. Результат - запуск VKOpenAuthActivity
-        VKSdk.authorize(scope,true,false);
+        VKSdk.authorize(scope,true,true);
     }
 
 

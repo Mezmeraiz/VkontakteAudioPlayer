@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
                 android:text="Empty Eyes"
-                android:id="@+id/textViewTitle"
+                android:id="@+id/textViewTitleDownloadNotif"
                 android:gravity="center"
                 android:textColor="#fff" />
 
@@ -34,36 +34,28 @@
                 android:layout_height="wrap_content"
                 android:text="Within Temptation"
                 android:textSize="16sp"
-                android:id="@+id/textViewArtist"
+                android:id="@+id/textViewArtistDownloadNotif"
                 android:textColor="#fff" />
         </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="90dp"
+            android:layout_height="30dp"
             android:gravity="center">
 
             <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:id="@+id/imageViewNotifPrev"
-                android:src="@drawable/widget_prev" />
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/imageViewDownloadNotif"
+                android:src="@drawable/vd_download_white" />
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:id="@+id/imageViewNotifPlay"
+            <ProgressBar
+                style="@style/ProgressBarTheme"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:id="@+id/progressBarDownloadNotif" />
 
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp"
-                android:src="@drawable/widget_play" />
-
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:id="@+id/imageViewNotifNext"
-                android:src="@drawable/widget_next" />
         </LinearLayout>
 
     </LinearLayout>
@@ -71,7 +63,7 @@
     <ImageView
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:id="@+id/imageViewNotifClose"
+        android:id="@+id/imageViewDownloadNotifClose"
         android:layout_gravity="right"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"

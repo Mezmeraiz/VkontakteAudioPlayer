@@ -33,6 +33,11 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".services.DownloadService"
+            >
+        </service>
+
         <receiver android:name=".PlayWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

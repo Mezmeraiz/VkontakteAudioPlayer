@@ -3,26 +3,29 @@ package com.mezmeraiz.vkontakteaudioplayer.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableItemViewHolder;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
+import com.mezmeraiz.vkontakteaudioplayer.DownloadListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
-import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
+import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
+import com.pnikosis.materialishprogress.ProgressWheel;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 
@@ -42,22 +45,23 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
     private LinkedList<Map<String,String>> mAudioList;
     private MainActivity mActivity;
     private int mPressedPosition = -1;
-    private PopupMenuListener mPopupMenuListener;
+    private DownloadListener mDownloadListener;
     private Context mContext;
     private final int mCurrentFragment; // Фрагмент, для которого ставится данный адаптер
-    private final Drawable mGrayDotsDrawable, mBlackDotsDrawable;
+    private final Drawable mCheckIcon, mDownloadIcon, mDeleteIcon;
     private final int mGreyColor = Color.parseColor("#cfd8dc");
-    private final int mWhiteColor = Color.parseColor("#FFFAFAFA");
+    private final int mWhiteColor = Color.parseColor("#EEEEEE");
 
-    public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, PopupMenuListener popupMenuListener, int currentFragment) {
+    public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, DownloadListener downloadListener, int currentFragment) {
         setHasStableIds(true);
         mAudioList = (LinkedList<Map<String, String>>) itemList;
         mCurrentFragment = currentFragment;
         mActivity = (MainActivity) activity;
-        mGrayDotsDrawable = mActivity.getResources().getDrawable(R.drawable.dots_vertical_gray);
-        mBlackDotsDrawable = mActivity.getResources().getDrawable(R.drawable.dots_vertical);
+        mCheckIcon = mActivity.getResources().getDrawable(R.drawable.vd_check);
+        mDownloadIcon = mActivity.getResources().getDrawable(R.drawable.vd_download);
+        mDeleteIcon = mActivity.getResources().getDrawable(R.drawable.vd_delete);
         mContext = mActivity.getApplicationContext();
-        mPopupMenuListener = popupMenuListener;
+        mDownloadListener = downloadListener;
     }
 
     @Override
@@ -71,6 +75,34 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         FrameLayout pressPlayFrameLayout = viewHolder.mPressPlayFrameLayout;
         FrameLayout pressMenuFrameLayout = viewHolder.mPressMenuFrameLayout;
         ImageView pressMenuImageView = viewHolder.mPressMenuImageView;
+        ProgressWheel progressBar = viewHolder.mProgressbar;
+        // Смотрим наличие строки в DownloadTable с данным id. Если нет -
+        // ставим ProgressBar - INVISIBLE, а ImageView - VISIBLE
+        // Если id совпадаем - меняем видимость наоборот и ставим прогресс на ProgressBar
+        Cursor cursor = DB.getInstance().open(mContext).getCursor(DBHelper.DOWNLOAD_TABLE_NAME, null, null, null, null, null, null);
+        if(cursor.moveToFirst()){
+            Map<String, String> map = (Map<String, String>) AudioHolder.getInstance().getList(mCurrentFragment).get(i);
+            String id = map.get(AudioHolder.ID);
+            do{
+                String dbid = cursor.getString(cursor.getColumnIndex(AudioHolder.ID));
+                if(dbid.equals(id)){
+                    progressBar.setVisibility(View.VISIBLE);
+                    pressMenuImageView.setVisibility(View.INVISIBLE);
+                    int progress = cursor.getInt(cursor.getColumnIndex(AudioHolder.PROGRESS));
+                    float p = ((float)progress)/100;
+                    if(p > 0){
+                        progressBar.setProgress(p);
+                    }
+                    break;
+                }else{
+                    progressBar.setVisibility(View.INVISIBLE);
+                    pressMenuImageView.setVisibility(View.VISIBLE);
+                }
+            }while(cursor.moveToNext());
+        }else {
+            progressBar.setVisibility(View.INVISIBLE);
+            pressMenuImageView.setVisibility(View.VISIBLE);
+        }
         pressPlayFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {// Отправка broadcast в PlayService о выборе композиции и старте проигрывания
@@ -82,18 +114,21 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
                 }
             }
         });
+        // Установка слушателя на кнопку загрузки/удаления
         pressMenuFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 v.setTag(i);
-                mPopupMenuListener.onClickPopupMenu(v);
+                mDownloadListener.onClickDownload(v);
             }
         });
-        // Если аудиозапись есть в сохраненных - ставим серую иконку на загрузку. Если нет - черную
-        if (mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getSavedMap() != null && AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get(i).get(AudioHolder.ID))){
-            pressMenuImageView.setImageDrawable(mGrayDotsDrawable);
-        }else{
-            pressMenuImageView.setImageDrawable(mBlackDotsDrawable);
+        // Ставим иконки в зависимости от типа Фрагмента и наличия в сохраненных
+        if(mCurrentFragment == AudioHolder.SAVED_FRAGMENT){
+            pressMenuImageView.setImageDrawable(mDeleteIcon);
+        }else if(mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getSavedMap() != null && AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get(i).get(AudioHolder.ID))){
+            pressMenuImageView.setImageDrawable(mCheckIcon);
+        }else if(mCurrentFragment != AudioHolder.SAVED_FRAGMENT && AudioHolder.getInstance().getSavedMap() != null && !AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get(i).get(AudioHolder.ID))){
+            pressMenuImageView.setImageDrawable(mDownloadIcon);
         }
         String band = mAudioList.get(i).get(AudioHolder.ARTIST);
         String song = mAudioList.get(i).get(AudioHolder.TITLE);
@@ -114,9 +149,12 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
     public void addItem(Map<String, String> map){
         // Добавление нового итема в начало списка(Для SaveFragment)
         mAudioList.addFirst(map);
-        if(mPressedPosition > -1)
+        if(mPressedPosition > -1){
             mPressedPosition++;
+            mContext.sendBroadcast(new Intent(CHANGE_POSITION_FROM_ADAPTER).putExtra(POSITION, mPressedPosition).putExtra(Player.CURRENT_FRAGMENT_KEY, mCurrentFragment));
+        }
         notifyDataSetChanged();
+
     }
 
     public void onDataChanged(){
@@ -232,6 +270,7 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         private FrameLayout mPressPlayFrameLayout, mPressMenuFrameLayout;
         private CardView mCardView;
         private ImageView mPressMenuImageView;
+        private ProgressWheel mProgressbar;
 
         public RecyclerViewHolder(View itemView) {
             super(itemView);
@@ -241,6 +280,7 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
             mBandTextView = (TextView) itemView.findViewById(R.id.band_name);
             mSongTextView = (TextView) itemView.findViewById(R.id.song_name);
             mPressMenuImageView = (ImageView) itemView.findViewById(R.id.pressMenuImageView);
+            mProgressbar = (ProgressWheel) itemView.findViewById(R.id.pressMenuProgressBar);
         }
 
     }

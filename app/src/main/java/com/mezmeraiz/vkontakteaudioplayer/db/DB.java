@@ -55,12 +55,12 @@ public class DB {
         cv.put(AudioHolder.PATH, path);
         cv.put(AudioHolder.DURATION, duration);
         cv.put(AudioHolder.ORDER, order);
-        mSQLiteDatabase.insert(DBHelper.TABLE_NAME,null,cv);
+        mSQLiteDatabase.insert(DBHelper.SONG_TABLE_NAME,null,cv);
     }
 
     public synchronized void deleteSong(long id, int deletedOrder){
         String query = "UPDATE SongTable SET song_order = song_order - 1 WHERE song_order > " + deletedOrder;
-        mSQLiteDatabase.delete(DBHelper.TABLE_NAME, AudioHolder.ID + " = " + id, null);
+        mSQLiteDatabase.delete(DBHelper.SONG_TABLE_NAME, AudioHolder.ID + " = " + id, null);
         Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
         cursor.moveToFirst();
 
@@ -81,6 +81,32 @@ public class DB {
         Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
         cursor.moveToFirst();
     }
+
+    public void addNewDownload(String id, String url, String title, String artist, String duration){
+        ContentValues cv = new ContentValues();
+        cv.put(AudioHolder.ID, id);
+        cv.put(AudioHolder.URL, url);
+        cv.put(AudioHolder.PROGRESS, 0);
+        cv.put(AudioHolder.TITLE, title);
+        cv.put(AudioHolder.ARTIST, artist);
+        cv.put(AudioHolder.DURATION, duration);
+        mSQLiteDatabase.insert(DBHelper.DOWNLOAD_TABLE_NAME,null,cv);
+    }
+
+    public void updateNewDownload(String id, int percent){
+        String query = "UPDATE DownloadTable SET progress = " + percent + " WHERE id = " + id;
+        Cursor cursor = mSQLiteDatabase.rawQuery(query, null);
+        cursor.moveToFirst();
+    }
+
+    public void deleteAll(){
+        mSQLiteDatabase.delete(DBHelper.DOWNLOAD_TABLE_NAME, null, null);
+    }
+
+    public void deleteDownloadRow(String id){
+        mSQLiteDatabase.delete(DBHelper.DOWNLOAD_TABLE_NAME, AudioHolder.ID + " = " + id, null);
+    }
+
 
 
 

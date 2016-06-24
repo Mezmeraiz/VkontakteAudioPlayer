@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,14 +23,14 @@ import android.widget.PopupMenu;
 
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
-import com.mezmeraiz.vkontakteaudioplayer.OnDataChangedListener;
+import com.mezmeraiz.vkontakteaudioplayer.DownloadListener;
 import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
-import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.loaders.SaveFragmentCursorLoader;
+import com.mezmeraiz.vkontakteaudioplayer.services.DownloadService;
 
 import java.io.File;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ import java.util.Map;
 /**
  * Фрагмент для сохраненных аудиозаписей
  */
-public class SaveFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnDataChangedListener, OnRestartActivityListener {
+public class SaveFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnRestartActivityListener {
 
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
@@ -49,7 +50,7 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
     private LinkedList<Map<String,String>> mAudioList = new LinkedList<Map<String,String>>();
     private BroadcastReceiver mBroadcastReceiver;
     private Context mContext;
-    public PopupMenuListener mPopupMenuListener;
+    public DownloadListener mDownloadListener;
     private final int SAVE_FRAGMENT_CURSOR_LOADER = 0;
 
 
@@ -61,18 +62,16 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(Player.START_PLAYING_ACTION))
+                if(intent.getAction().equals(Player.START_PLAYING_ACTION)){
                     onReceiveStartPlaying(intent);
+                }else if(intent.getAction().equals(DownloadService.END_DOWNLOAD_ACTION)){
+                    onReceiveEndDownload(intent);
+                }
             }
         };
-        mPopupMenuListener = new PopupMenuListener() {
+        mDownloadListener = new DownloadListener() {
             @Override
-            public void onClickPopupMenu(final View v) {
-                PopupMenu popupMenu = new PopupMenu(getActivity(), v);
-                popupMenu.inflate(R.menu.menu_saved_fragment_popup);
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
+            public void onClickDownload(final View v) {
                         // Удаление файла, строки из базы и итема из RecyclerView:
                         // Удаление файла с диска, записи из базы и элемента из списка в адаптере
                         mAudioList = (LinkedList<Map<String, String>>) AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT);
@@ -90,14 +89,13 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                             }).start();
                             mRecyclerViewAdapter.removeItem(position);
                         }
-                        return false;
-                    }
-                });
-                popupMenu.show();
+                        mContext.sendBroadcast(new Intent(DownloadService.UPDATE_PROGRESS_ACTION));
+
             }
         };
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
+        intentFilter.addAction(DownloadService.END_DOWNLOAD_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
@@ -155,7 +153,7 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     private void setAdapter(){
-        mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mPopupMenuListener, AudioHolder.SAVED_FRAGMENT);
+        mRecyclerViewAdapter = new RecyclerViewAdapter(mAudioList, getActivity(), mDownloadListener, AudioHolder.SAVED_FRAGMENT);
         mWrappedAdapter = mRecyclerViewDragDropManager.createWrappedAdapter(mRecyclerViewAdapter);
         mRecyclerView.setAdapter(mWrappedAdapter);
         mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
@@ -200,14 +198,17 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
         return audioList;
     }
 
-    @Override
-    public void onDataChanged(Map<String, String > map) {
-        // Вызывается по окончании загрузки новой аудиозаписи из DownLoader
-        // для обновления списка.
-        if(mRecyclerView != null){
-            mRecyclerViewAdapter.addItem(map);
-        }
+    private void onReceiveEndDownload(Intent intent){
+        // Пришел сигнал об окончании загрузки - извещаем адаптер
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(AudioHolder.TITLE, intent.getStringExtra(AudioHolder.TITLE));
+        map.put(AudioHolder.URL, intent.getStringExtra(AudioHolder.PATH));
+        map.put(AudioHolder.ARTIST, intent.getStringExtra(AudioHolder.ARTIST));
+        map.put(AudioHolder.DURATION, intent.getStringExtra(AudioHolder.DURATION));
+        map.put(AudioHolder.ID, intent.getStringExtra(AudioHolder.ID));
+        mRecyclerViewAdapter.addItem(map);
     }
+
 
     @Override
     public void scrollToPosition(int position) {

@@ -1,12 +1,18 @@
 package com.mezmeraiz.vkontakteaudioplayer.ui;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,26 +22,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
-import android.widget.Toast;
-
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
-import com.mezmeraiz.vkontakteaudioplayer.Downloader;
-import com.mezmeraiz.vkontakteaudioplayer.DownloaderListener;
+import com.mezmeraiz.vkontakteaudioplayer.DownloadListener;
 import com.mezmeraiz.vkontakteaudioplayer.OnRestartActivityListener;
 import com.mezmeraiz.vkontakteaudioplayer.Player;
-import com.mezmeraiz.vkontakteaudioplayer.PopupMenuListener;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
+import com.mezmeraiz.vkontakteaudioplayer.db.DB;
+import com.mezmeraiz.vkontakteaudioplayer.services.DownloadService;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,8 +57,7 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
     private VKRequest mVKRequest;
     private Context mContext;
     private SearchView mSearchView;
-    private PopupMenuListener mPopupMenuListener;
-    private DownloaderListener mDownloaderListener;
+    private DownloadListener mPopupMenuListener;
     private MainActivity mMainActivity;
 
 
@@ -70,44 +70,39 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(Player.START_PLAYING_ACTION))
+                if(intent.getAction().equals(Player.START_PLAYING_ACTION)) {
                     onReceiveStartPlaying(intent);
+                }else if(intent.getAction().equals(DownloadService.UPDATE_PROGRESS_ACTION)){
+                    mRecyclerViewAdapter.notifyDataSetChanged();
+                }else if(intent.getAction().equals(DownloadService.END_DOWNLOAD_ACTION)){
+                    onReceiveEndDownload(intent);
+                }
             }
         };
-        mDownloaderListener = new DownloaderListener() {
+        mPopupMenuListener = new DownloadListener() {
             @Override
-            public void onDownloadFinished(String id, String songPath, int position) {
-                AudioHolder.getInstance().getSavedMap().put(id, songPath);
-                mRecyclerViewAdapter.notifyItemChanged(position);
-            }
-        };
-        mPopupMenuListener = new PopupMenuListener() {
-            @Override
-            public void onClickPopupMenu(final View v) {
-                PopupMenu popupMenu = new PopupMenu(getActivity(), v);
-                popupMenu.inflate(R.menu.menu_search_fragment_popup);
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        // Проверяем, сохранена ли уже аудиозапись.
-                        // Если нет - сохраняем
-                        switch (item.getItemId()){
-                            case R.id.save:
-                                if (AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))){
-                                    Toast.makeText(mContext, "Уже сохранено", Toast.LENGTH_SHORT).show();
-                                }else{
-                                    new Downloader(mContext).download(AudioHolder.SEARCH_FRAGMENT, (Integer) v.getTag(), mMainActivity.getOnDataChangedListener(), mDownloaderListener);
-                                }
-                                break;
-                        }
-                        return false;
+            public void onClickDownload(final View v) {
+                if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    if (!AudioHolder.getInstance().getSavedMap().containsKey(mAudioList.get((Integer) v.getTag()).get(AudioHolder.ID))) {
+                        DB db = DB.getInstance().open(mContext);
+                        Map<String, String> map = mAudioList.get((Integer) v.getTag());
+                        db.addNewDownload(map.get(AudioHolder.ID),
+                                map.get(AudioHolder.URL),
+                                map.get(AudioHolder.TITLE),
+                                map.get(AudioHolder.ARTIST),
+                                map.get(AudioHolder.DURATION));
+                        mRecyclerViewAdapter.notifyDataSetChanged();
+                        getActivity().startService(new Intent(getActivity(), DownloadService.class));
                     }
-                });
-                popupMenu.show();
+                }else{
+                    ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, AudioFragment.PERMISSION_REQUEST_CODE);
+                }
             }
         };
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
+        intentFilter.addAction(DownloadService.UPDATE_PROGRESS_ACTION);
+        intentFilter.addAction(DownloadService.END_DOWNLOAD_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
@@ -133,6 +128,19 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == AudioFragment.PERMISSION_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            View view = getActivity().findViewById(R.id.main_content);
+            Snackbar.make(view,"Ура!",Snackbar.LENGTH_SHORT).show();
+
+        }else{
+            View view = getActivity().findViewById(R.id.main_content);
+            Snackbar.make(view,"Ну и хрен вы че сохраните тогда",Snackbar.LENGTH_SHORT).show();
+        }
     }
 
     @Nullable
@@ -203,6 +211,15 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         }else{
             mRecyclerViewAdapter.removePressedPosition();
         }
+        mRecyclerViewAdapter.notifyDataSetChanged();
+    }
+
+    private void onReceiveEndDownload(Intent intent){
+        // Получен broadcast из DownloadService об окончании загрузки
+        // Добавляем данные в SavedMap и обновляем адаптер
+        String id = intent.getStringExtra(AudioHolder.ID);
+        String path = intent.getStringExtra(AudioHolder.PATH);
+        AudioHolder.getInstance().getSavedMap().put(id, path);
         mRecyclerViewAdapter.notifyDataSetChanged();
     }
 

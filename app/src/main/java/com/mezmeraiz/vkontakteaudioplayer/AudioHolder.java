@@ -17,6 +17,7 @@ public class AudioHolder {
     public final static String PATH = "path";
     public final static String ORDER = "song_order";
     public final static String OWNER_ID = "owner_id";
+    public final static String PROGRESS = "progress";
     public final static int AUDIO_FRAGMENT = 0;
     public final static int SAVED_FRAGMENT = 1;
     public final static int SEARCH_FRAGMENT = 2;

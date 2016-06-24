@@ -114,9 +114,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_marginBottom="68dp"
+        android:layout_marginBottom="84dp"
+        android:layout_marginRight="16dp"
         app:fabSize="normal"
-        android:src="@drawable/play24"
+        android:src="@drawable/play"
         android:visibility="invisible" />
 
 
