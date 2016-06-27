@@ -66,6 +66,8 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
                     onReceiveStartPlaying(intent);
                 }else if(intent.getAction().equals(DownloadService.END_DOWNLOAD_ACTION)){
                     onReceiveEndDownload(intent);
+                }else if(intent.getAction().equals(MainActivity.HIDE_LAYOUT_FROM_SERVICE_ACTION)){
+                    onReceiveRemovePressedPosition();
                 }
             }
         };
@@ -96,6 +98,7 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Player.START_PLAYING_ACTION);
         intentFilter.addAction(DownloadService.END_DOWNLOAD_ACTION);
+        intentFilter.addAction(MainActivity.HIDE_LAYOUT_FROM_SERVICE_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
@@ -207,6 +210,14 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
         map.put(AudioHolder.DURATION, intent.getStringExtra(AudioHolder.DURATION));
         map.put(AudioHolder.ID, intent.getStringExtra(AudioHolder.ID));
         mRecyclerViewAdapter.addItem(map);
+    }
+
+    private void onReceiveRemovePressedPosition(){
+        // В нотификации нажата кнопка отмены - снимаем выделение с итема
+        if(mRecyclerViewAdapter != null){
+            mRecyclerViewAdapter.removePressedPosition();
+            mRecyclerViewAdapter.notifyDataSetChanged();
+        }
     }
 
 

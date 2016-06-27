@@ -49,7 +49,6 @@ public class PlayWidget extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.imageViewWidgetNext, createPendingIntent(context, NEXT_BUTTON_KEY));
         views.setTextViewText(R.id.textViewTitle, sharedPreferences.getString(TITLE_KEY, ""));
         views.setTextViewText(R.id.textViewArtist, sharedPreferences.getString(ARTIST_KEY, ""));
-        views.setProgressBar(R.id.progressBarWidget, sharedPreferences.getInt(DURATION_KEY, 0), sharedPreferences.getInt(PROGRESS_KEY, 0), false);
         if(sharedPreferences.getBoolean(PLAY_STATE_KEY, false)){
             views.setImageViewResource(R.id.imageViewWidgetPlay, R.drawable.widget_pause);
         }else{
@@ -71,12 +70,6 @@ public class PlayWidget extends AppWidgetProvider {
                 mEditor.putInt(DURATION_KEY, intent.getIntExtra(Player.DURATION_KEY, 0));
                 mEditor.putInt(PROGRESS_KEY, intent.getIntExtra(Player.PROGRESS_KEY, 0));
                 mEditor.putBoolean(PLAY_STATE_KEY, intent.getBooleanExtra(Player.PLAY_STATE_KEY, false));
-                mEditor.commit();
-                updateWidgets(context);
-                break;
-            case Player.SEEKBAR_PROGRESS_ACTION:
-                // Сигнал о прогрессе progressBar
-                mEditor.putInt(PROGRESS_KEY, intent.getIntExtra(Player.SEEKBAR_PROGRESS_KEY, 0));
                 mEditor.commit();
                 updateWidgets(context);
                 break;

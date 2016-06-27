@@ -76,6 +76,8 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
                     mRecyclerViewAdapter.notifyDataSetChanged();
                 }else if(intent.getAction().equals(DownloadService.END_DOWNLOAD_ACTION)){
                     onReceiveEndDownload(intent);
+                }else if(intent.getAction().equals(MainActivity.HIDE_LAYOUT_FROM_SERVICE_ACTION)){
+                    onReceiveRemovePressedPosition();
                 }
             }
         };
@@ -103,6 +105,7 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         intentFilter.addAction(Player.START_PLAYING_ACTION);
         intentFilter.addAction(DownloadService.UPDATE_PROGRESS_ACTION);
         intentFilter.addAction(DownloadService.END_DOWNLOAD_ACTION);
+        intentFilter.addAction(MainActivity.HIDE_LAYOUT_FROM_SERVICE_ACTION);
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
@@ -221,6 +224,14 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         String path = intent.getStringExtra(AudioHolder.PATH);
         AudioHolder.getInstance().getSavedMap().put(id, path);
         mRecyclerViewAdapter.notifyDataSetChanged();
+    }
+
+    private void onReceiveRemovePressedPosition(){
+        // В нотификации нажата кнопка отмены - снимаем выделение с итема
+        if(mRecyclerViewAdapter != null){
+            mRecyclerViewAdapter.removePressedPosition();
+            mRecyclerViewAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override

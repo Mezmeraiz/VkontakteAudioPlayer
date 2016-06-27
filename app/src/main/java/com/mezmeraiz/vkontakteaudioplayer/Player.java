@@ -1,16 +1,9 @@
 package com.mezmeraiz.vkontakteaudioplayer;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.util.Log;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -63,13 +56,15 @@ public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlaye
         startMediaPlayer();
         isPlaying = true;
         sendBroadcastStartPlaying();
-        PlayNotification.getInstance(mContext).createNotification(mAudioList.get(mPosition).get(AudioHolder.TITLE),mAudioList.get(mPosition).get(AudioHolder.ARTIST));
     }
 
     public boolean isPlaying(){
         return isPlaying;
     }
 
+    public int getPosition(){
+        return mPosition;
+    }
 
     public void onFabPressed(){
         // Из активности пришел сигнал о том, что нажата fab

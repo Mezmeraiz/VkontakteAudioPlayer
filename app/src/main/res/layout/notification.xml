@@ -22,19 +22,19 @@
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="25dp"
                 android:textSize="18sp"
                 android:text="Empty Eyes"
-                android:id="@+id/textViewTitle"
+                android:id="@+id/textViewPlayNotifTitle"
                 android:gravity="center"
                 android:textColor="#fff" />
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="22dp"
                 android:text="Within Temptation"
                 android:textSize="16sp"
-                android:id="@+id/textViewArtist"
+                android:id="@+id/textViewPlayNotifArtist"
                 android:textColor="#fff" />
         </LinearLayout>
 
@@ -47,13 +47,13 @@
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:id="@+id/imageViewNotifPrev"
+                android:id="@+id/imageViewPlayNotifPrev"
                 android:src="@drawable/widget_prev" />
 
             <ImageView
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:id="@+id/imageViewNotifPlay"
+                android:id="@+id/imageViewPlayNotifPlay"
 
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
@@ -62,7 +62,7 @@
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:id="@+id/imageViewNotifNext"
+                android:id="@+id/imageViewPlayNotifNext"
                 android:src="@drawable/widget_next" />
         </LinearLayout>
 
@@ -71,7 +71,7 @@
     <ImageView
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:id="@+id/imageViewNotifClose"
+        android:id="@+id/imageViewPlayNotifClose"
         android:layout_gravity="right"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"

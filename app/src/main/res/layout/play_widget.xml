@@ -16,21 +16,20 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginTop="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="25dp"
                 android:textSize="18sp"
-                android:text="Empty Eyes"
                 android:id="@+id/textViewTitle"
                 android:gravity="center"
                 android:textColor="#fff" />
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Within Temptation"
+                android:layout_height="22dp"
                 android:textSize="16sp"
                 android:id="@+id/textViewArtist"
                 android:textColor="#fff" />
@@ -64,21 +63,6 @@
                 android:background="@drawable/widget_next" />
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="38dp"
-            android:gravity="center">
-
-            <ProgressBar
-                style="@style/ProgressBarTheme"
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:id="@+id/progressBarWidget"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp"
-                android:progress="30" />
-        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

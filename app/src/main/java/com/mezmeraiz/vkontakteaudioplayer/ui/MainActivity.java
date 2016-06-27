@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +26,8 @@ import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
+
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String FAB_PRESSED_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_SERVICE_ACTION";//Сигнал в сервис о нажатии на fab
     public static final String SEEKBAR_PRESSED_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PRESSED_SERVICE_ACTION";//Сигнал в сервис о нажатии на SeekBar
     public static final String REQUEST_DATA_FROM_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.REQUEST_DATA_FROM_SERVICE_ACTION";//Сигнал в сервис на запрос данных(отсылается после повторного открытия MainActivity)
+    public static final String HIDE_LAYOUT_FROM_SERVICE_ACTION = "com.mezmeraiz.vkontakteaudioplayer.HIDE_LAYOUT_FROM_SERVICE_ACTION";
 
     private ViewPager mViewPager;
     private ViewPagerAdapter mViewPagerAdapter;
@@ -59,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //DB.getInstance().open(this).deleteAll();
         setContentView(R.layout.activity_main);
         sendBroadcastRequestData();
         mSongTextView = (TextView) findViewById(R.id.songTextView);
@@ -110,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
                     onReceiveSeekBarProgress(intent);
                 else if(intent.getAction().equals(Player.SEEKBAR_BUFFERING_ACTION))
                     onReceiveSeekBarBuffering(intent);
+                else if(intent.getAction().equals(HIDE_LAYOUT_FROM_SERVICE_ACTION))
+                    onReceiveHideLayout();
             }
         };
         IntentFilter intentFilter = new IntentFilter();
@@ -117,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(Player.FAB_PRESSED_BACK_ACTION);
         intentFilter.addAction(Player.SEEKBAR_PROGRESS_ACTION);
         intentFilter.addAction(Player.SEEKBAR_BUFFERING_ACTION);
+        intentFilter.addAction(HIDE_LAYOUT_FROM_SERVICE_ACTION);
         registerReceiver(mBroadcastReceiver, intentFilter);
-        startService(new Intent(this, PlayService.class));
     }
 
     private void setViewPager(){
@@ -233,13 +239,20 @@ public class MainActivity extends AppCompatActivity {
         mSeekBar.setSecondaryProgress(secondaryProgress);
     }
 
+    private void onReceiveHideLayout(){
+        // В уведомлении нажата кнопка отмены - прячем панель управления
+        mFloatingActionButton.setVisibility(View.INVISIBLE);
+        mTopFrameLayout.setVisibility(View.INVISIBLE);
+        mBottomFrameLayout.setVisibility(View.INVISIBLE);
+    }
+
     private void sendBroadcastFabPressed() {
         // Сигнал в сервис о нажатии на fab
         sendBroadcast(new Intent(FAB_PRESSED_SERVICE_ACTION));
     }
 
     private void sendBroadcastSeekBarPressed(int progress){
-        //  Сигнал в сервис о нажатии на SeekBar
+        // Сигнал в сервис о нажатии на SeekBar
         Intent intent = new Intent(SEEKBAR_PRESSED_SERVICE_ACTION);
         intent.putExtra(PlayService.SEEKBAR_PRESSED_KEY, progress);
         sendBroadcast(intent);

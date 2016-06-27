@@ -1,7 +1,6 @@
 package com.mezmeraiz.vkontakteaudioplayer.services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -10,24 +9,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.os.Bundle;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
-
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
-import com.mezmeraiz.vkontakteaudioplayer.ui.AudioFragment;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -38,8 +30,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by pc on 22.06.2016.
@@ -116,9 +106,9 @@ public class DownloadService extends Service{
         mNotification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.vd_download_white)
                 .setPriority(Notification.PRIORITY_HIGH)
+                .setContent(mRemoteViews)
                 .setOngoing(true)
                 .build();
-        mNotification.bigContentView = mRemoteViews;
     }
 
     class AsyncLoader extends AsyncTask<Void,Void,String> {
@@ -153,22 +143,22 @@ public class DownloadService extends Service{
 
     private  String loadRequest(){
         // Загрузка аудиозаписи
-        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "VKplayer");
-        if (!directory.exists()) {
-            directory.mkdir();
+        File newSong;
+        if(Build.MODEL.equals("GT-I9190")){
+            getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+            newSong = new File("/storage/extSdCard/Android/data/com.mezmeraiz.vkontakteaudioplayer/files/Music", mArtist + " " + mTitle + ".mp3");
+        }else{
+            newSong = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), mArtist + " " + mTitle + ".mp3");
         }
-        String songPath = directory.getAbsolutePath() + "/" + mArtist + " " + mTitle + ".mp3";;
         try{
             URL url=new URL(mUrl);
             HttpURLConnection connection=(HttpURLConnection)url.openConnection();
             connection.setDoInput(true);
             int length = connection.getContentLength() ;
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                File newSong = new File(songPath);
-                newSong.createNewFile();
                 DB db = DB.getInstance().open(getApplicationContext());
                 int order = AudioHolder.getInstance().getList(AudioHolder.SAVED_FRAGMENT).size();
-                db.addNewSong(mId, mTitle, mArtist, songPath, mDuration, order);
+                db.addNewSong(mId, mTitle, mArtist, newSong.getAbsolutePath(), mDuration, order);
                 InputStream inputStream = new BufferedInputStream(connection.getInputStream());
                 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(newSong));
                 sendBroadcast(new Intent(UPDATE_PROGRESS_ACTION));
@@ -210,7 +200,7 @@ public class DownloadService extends Service{
         }catch (IOException e){
             e.printStackTrace();
         }
-        return songPath;
+        return newSong.getAbsolutePath();
     }
 
     @Override

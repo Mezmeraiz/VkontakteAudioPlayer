@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +23,11 @@ import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
+import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -90,9 +89,7 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
                     pressMenuImageView.setVisibility(View.INVISIBLE);
                     int progress = cursor.getInt(cursor.getColumnIndex(AudioHolder.PROGRESS));
                     float p = ((float)progress)/100;
-                    if(p > 0){
-                        progressBar.setProgress(p);
-                    }
+                    progressBar.setProgress(p);
                     break;
                 }else{
                     progressBar.setVisibility(View.INVISIBLE);
@@ -105,13 +102,13 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         }
         pressPlayFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {// Отправка broadcast в PlayService о выборе композиции и старте проигрывания
-                Intent intent = new Intent(MainActivity.NEW_TASK_SERVICE_ACTION);
+            public void onClick(View v) {// Запуск PlayService и передача данных о выборе композиции и старте проигрывания
+                Intent intent = new Intent(mContext, PlayService.class);
                 intent.putExtra(POSITION, i);
                 if (mActivity != null) {
                     intent.putExtra(CURRENT_FRAGMENT, mActivity.getCurrentFragment());
-                    mActivity.sendBroadcast(intent);
                 }
+                mContext.startService(intent);
             }
         });
         // Установка слушателя на кнопку загрузки/удаления

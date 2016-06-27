@@ -30,15 +30,18 @@ public class FabBehavior  extends CoordinatorLayout.Behavior<FloatingActionButto
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
         // Мониторим положение Snackbar и AppBarLayout и меняем соответствующе положение FAB
+
         if (dependency instanceof Snackbar.SnackbarLayout){
             float translationY = Math.min(0, dependency.getTranslationY() - dependency.getHeight());
             child.setTranslationY(translationY);
         }else if (dependency instanceof AppBarLayout){
+
             if(!firstLaunch){
                 firstLaunch = true;
                 child.setTranslationY(300);
                 return true;
             }
+
             child.setTranslationY(dependency.getY() * -1);
         }
         return true;

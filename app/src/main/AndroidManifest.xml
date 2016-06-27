@@ -43,7 +43,6 @@
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_BACK_ACTION" />
                 <action android:name="com.mezmeraiz.vkontakteaudioplayer.START_PLAYING_ACTION" />
-                <action android:name="com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PROGRESS_ACTION" />
                 <action android:name="com.mezmeraiz.vkontakteaudioplayer.DESTROY_WIDGET_ACTION" />
                 <action android:name="com.mezmeraiz.vkontakteaudioplayer.CLICK_WIDGET_ACTION" />
             </intent-filter>
@@ -52,6 +51,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/play_widget_info" />
         </receiver>
+
+
     </application>
 
 </manifest>
