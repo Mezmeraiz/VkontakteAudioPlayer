@@ -59,7 +59,7 @@
         android:layout_marginBottom="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#607D8B"
+        android:background="?attr/colorPrimary"
         android:layout_gravity="center_horizontal|bottom"
         android:id="@+id/top_frame_layout"
         android:visibility="invisible">
@@ -92,7 +92,7 @@
     </FrameLayout>
     <FrameLayout
         app:layout_behavior=".behaviors.SeekbarBehavior"
-        android:background="#607D8B"
+        android:background="?attr/colorPrimary"
         android:layout_width="match_parent"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_height="?attr/actionBarSize"

@@ -41,7 +41,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                wheel:matProg_barColor="@color/accentColor"
+                wheel:matProg_barColor="?attr/colorAccent"
                 wheel:matProg_rimColor="#aaaaaa"
                 wheel:matProg_spinSpeed="0.5"
                 wheel:matProg_progressIndeterminate="true"

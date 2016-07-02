@@ -19,4 +19,10 @@
         parent="Widget.Design.TabLayout">
         <item name="tabIndicatorColor">@color/white</item>
     </style>
+
+    <style
+        name="ProgressBarTheme"
+        parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/progress_horizontal</item>
+    </style>
 </resources>

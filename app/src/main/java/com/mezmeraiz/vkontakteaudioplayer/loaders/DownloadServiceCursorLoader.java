@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.database.Cursor;
 
-import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
 

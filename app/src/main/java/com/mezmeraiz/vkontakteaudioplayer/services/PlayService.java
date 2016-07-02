@@ -1,7 +1,6 @@
 package com.mezmeraiz.vkontakteaudioplayer.services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -177,9 +176,9 @@ public class PlayService extends Service {
         remoteViews.setTextViewText(R.id.textViewPlayNotifTitle, map.get(AudioHolder.TITLE));
         remoteViews.setTextViewText(R.id.textViewPlayNotifArtist, map.get(AudioHolder.ARTIST));
         if (mPlayer.isPlaying()){
-            remoteViews.setImageViewResource(R.id.imageViewPlayNotifPlay, R.drawable.widget_pause);
+            remoteViews.setImageViewResource(R.id.imageViewPlayNotifPlay, R.drawable.notif_pause);
         }else{
-            remoteViews.setImageViewResource(R.id.imageViewPlayNotifPlay, R.drawable.widget_play);
+            remoteViews.setImageViewResource(R.id.imageViewPlayNotifPlay, R.drawable.notif_play);
         }
         remoteViews.setOnClickPendingIntent(R.id.imageViewPlayNotifPrev, createPendingIntent(PlayService.PREV_SERVICE_ACTION));
         remoteViews.setOnClickPendingIntent(R.id.imageViewPlayNotifNext, createPendingIntent(PlayService.NEXT_SERVICE_ACTION));

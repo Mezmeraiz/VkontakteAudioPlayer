@@ -3,8 +3,8 @@ package com.mezmeraiz.vkontakteaudioplayer.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +24,7 @@ import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
+import com.mezmeraiz.vkontakteaudioplayer.ui.ChooseThemeActivity;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.vk.sdk.api.VKParameters;
@@ -48,8 +49,11 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
     private Context mContext;
     private final int mCurrentFragment; // Фрагмент, для которого ставится данный адаптер
     private final Drawable mCheckIcon, mDownloadIcon, mDeleteIcon;
-    private final int mGreyColor = Color.parseColor("#cfd8dc");
-    private final int mWhiteColor = Color.parseColor("#EEEEEE");
+    private int mPressedColor;
+    private int mUnPressedColor;
+
+    //private final int mGreyColor = Color.parseColor(mContext.getResources().get)
+    //private final int mWhiteColor = R.color.primaryColorLight;
 
     public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, DownloadListener downloadListener, int currentFragment) {
         setHasStableIds(true);
@@ -61,11 +65,13 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         mDeleteIcon = mActivity.getResources().getDrawable(R.drawable.vd_delete);
         mContext = mActivity.getApplicationContext();
         mDownloadListener = downloadListener;
+        setColor();
     }
 
     @Override
     public RecyclerViewAdapter.RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view  = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler, parent, false);
+
         return new RecyclerViewHolder(view);
     }
 
@@ -130,9 +136,9 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         String band = mAudioList.get(i).get(AudioHolder.ARTIST);
         String song = mAudioList.get(i).get(AudioHolder.TITLE);
         if (i == mPressedPosition){
-            viewHolder.mCardView.setCardBackgroundColor(mGreyColor);
+            viewHolder.mCardView.setCardBackgroundColor(mContext.getResources().getColor(mPressedColor));
         }else {
-            viewHolder.mCardView.setCardBackgroundColor(mWhiteColor);
+            viewHolder.mCardView.setCardBackgroundColor(mContext.getResources().getColor(mUnPressedColor));
         }
         viewHolder.mSongTextView.setText(song);
         viewHolder.mBandTextView.setText(band);
@@ -258,6 +264,13 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
     private void onMoveAudio(final int id, final int beforeID){
         VKRequest vkRequest = new VKRequest("audio.reorder", VKParameters.from("audio_id", id, "before", beforeID));
         vkRequest.executeWithListener(new VKRequest.VKRequestListener() {});
+    }
+
+    private void setColor(){
+        // Установка цвета из SharedPreferences
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(ChooseThemeActivity.THEME_PREFERENCES, Context.MODE_PRIVATE);
+        mPressedColor = sharedPreferences.getInt(ChooseThemeActivity.PRESSED_KEY, R.color.accentColorLight);
+        mUnPressedColor = R.color.unpressColor;
     }
 
     public static class RecyclerViewHolder extends AbstractDraggableItemViewHolder {

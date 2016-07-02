@@ -3,7 +3,7 @@
     android:minWidth="292dp"
     android:minHeight="146dp"
     android:updatePeriodMillis="0"
-    android:previewImage="@drawable/example_appwidget_preview"
+    android:previewImage="@drawable/launcher1"
     android:initialLayout="@layout/play_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="keyguard|home_screen"

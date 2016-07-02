@@ -7,9 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -19,11 +17,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
@@ -115,18 +110,7 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == PERMISSION_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            View view = getActivity().findViewById(R.id.main_content);
-            Snackbar.make(view,"Ура!",Snackbar.LENGTH_SHORT).show();
 
-        }else{
-            View view = getActivity().findViewById(R.id.main_content);
-            Snackbar.make(view,"Ну и хрен вы че сохраните тогда",Snackbar.LENGTH_SHORT).show();
-        }
-    }
 
     @Nullable
     @Override

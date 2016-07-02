@@ -1,18 +1,18 @@
 package com.mezmeraiz.vkontakteaudioplayer.ui;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,14 +24,10 @@ import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.ViewPagerAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
+import com.mezmeraiz.vkontakteaudioplayer.services.DownloadService;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.vk.sdk.VKSdk;
-
-import java.io.File;
 import java.util.ArrayList;
-
-
-
 
 
 
@@ -58,12 +54,16 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout mTopFrameLayout, mBottomFrameLayout;
     private FloatingActionButton mFloatingActionButton;
     private boolean isStarted;// Становится true при первом запуске, чтобы не двигать fab после нажатия на новую композицию во фрагменте
+    private int REQUEST_CODE = 5;
+
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme();
+        checkDatabase();
         setContentView(R.layout.activity_main);
         sendBroadcastRequestData();
         mSongTextView = (TextView) findViewById(R.id.songTextView);
@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
         mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.setTitle("Мои аудиозаписи");
+
+
+
         setSupportActionBar(mToolbar);
         setViewPager();
         setTabLayout();
@@ -272,15 +275,27 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             logout();
             return true;
+        }else if(id == R.id.action_change_color){
+            Intent intent = new Intent(this, ChooseThemeActivity.class);
+            startActivityForResult(intent, REQUEST_CODE);
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REQUEST_CODE && resultCode == RESULT_OK){
+            finish();
+            this.startActivity(new Intent(this, MainActivity.class));
+        }
     }
 
     @Override
@@ -290,16 +305,35 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mBroadcastReceiver);
     }
 
+
     private void logout() {
         VKSdk.logout();
         startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
+    private void setTheme(){
+        SharedPreferences sharedPreferences = getSharedPreferences(ChooseThemeActivity.THEME_PREFERENCES, MODE_PRIVATE);
+        int currentTheme = sharedPreferences.getInt(ChooseThemeActivity.CURRENT_THEME_KEY, 0);
+        setTheme(ChooseThemeActivity.mThemes[currentTheme]);
+    }
+
+    private void checkDatabase(){
+        // Проверка базы - если сервис не запущем - удаляем
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        boolean serviceState = false;
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (DownloadService.class.getName().equals(service.service.getClassName())) {
+                serviceState = true;
+            }
+        }
+        if(!serviceState){
+            DB.getInstance().open(this).deleteAll();
+        }
+    }
+
     public int getCurrentFragment(){
         return mViewPager.getCurrentItem();
     }
-
-
 
 }

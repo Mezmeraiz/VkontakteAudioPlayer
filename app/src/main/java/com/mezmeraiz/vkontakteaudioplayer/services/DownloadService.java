@@ -13,9 +13,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.NotificationCompat;
 import android.widget.RemoteViews;
+import android.widget.Toast;
+
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
@@ -45,6 +46,7 @@ public class DownloadService extends Service{
     Notification mNotification;
     RemoteViews mRemoteViews;
     private boolean mDownloadState = true;
+
 
     @Nullable
     @Override
@@ -146,7 +148,7 @@ public class DownloadService extends Service{
         File newSong;
         if(Build.MODEL.equals("GT-I9190")){
             getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-            newSong = new File("/storage/extSdCard/Android/data/com.mezmeraiz.vkontakteaudioplayer/files/Music", mArtist + " " + mTitle + ".mp3");
+            newSong = new File("/storage/extSdCard/Android/data/com.mezmeraiz.vk_player_pro/files/Music", mArtist + " " + mTitle + ".mp3");
         }else{
             newSong = new File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), mArtist + " " + mTitle + ".mp3");
         }
@@ -154,6 +156,7 @@ public class DownloadService extends Service{
             URL url=new URL(mUrl);
             HttpURLConnection connection=(HttpURLConnection)url.openConnection();
             connection.setDoInput(true);
+            int connect = connection.getResponseCode();
             int length = connection.getContentLength() ;
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 DB db = DB.getInstance().open(getApplicationContext());
@@ -191,9 +194,7 @@ public class DownloadService extends Service{
                 inputStream.close();
                 connection.disconnect();
             }else{
-                Snackbar
-                        .make(null, "Нет подключения к интернету", Snackbar.LENGTH_LONG)
-                        .show();
+                Toast.makeText(getApplicationContext(),"Ошибка", Toast.LENGTH_SHORT).show();
             }
         }catch (MalformedURLException e){
             e.printStackTrace();

@@ -8,7 +8,7 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/linearLayout"
@@ -48,7 +48,7 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:id="@+id/imageViewPlayNotifPrev"
-                android:src="@drawable/widget_prev" />
+                android:src="@drawable/notif_prev" />
 
             <ImageView
                 android:layout_width="80dp"
@@ -57,13 +57,13 @@
 
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:src="@drawable/widget_play" />
+                android:src="@drawable/notif_play" />
 
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:id="@+id/imageViewPlayNotifNext"
-                android:src="@drawable/widget_next" />
+                android:src="@drawable/notif_next" />
         </LinearLayout>
 
     </LinearLayout>

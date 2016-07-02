@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">VKplayer</string>
+    <string name="app_name">Light VK Player</string>
     <string name="action_settings">Выход</string>
+    <string name="action_choose">Выбрать</string>
+    <string name="action_change_color">Изменить цвет</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
 </resources>
