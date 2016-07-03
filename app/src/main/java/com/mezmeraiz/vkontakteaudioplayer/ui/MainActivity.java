@@ -74,9 +74,6 @@ public class MainActivity extends AppCompatActivity {
         mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.setTitle("Мои аудиозаписи");
-
-
-
         setSupportActionBar(mToolbar);
         setViewPager();
         setTabLayout();
@@ -183,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
             tab.setCustomView(mViewPagerAdapter.getTabView(i));
         }
     }
-
 
     private void changeFabIcon(boolean fabState){
         if(fabState){
@@ -304,7 +300,6 @@ public class MainActivity extends AppCompatActivity {
         sendBroadcast(new Intent(DESTROY_SERVICE_ACTION));
         unregisterReceiver(mBroadcastReceiver);
     }
-
 
     private void logout() {
         VKSdk.logout();

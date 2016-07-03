@@ -14,12 +14,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.DownloadListener;
@@ -35,11 +33,9 @@ import com.vk.sdk.api.VKError;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,8 +106,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
         mContext.registerReceiver(mBroadcastReceiver, intentFilter);
     }
 
-
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -157,7 +151,6 @@ public class AudioFragment extends Fragment implements OnRestartActivityListener
         if(mRecyclerViewAdapter != null){
             mRecyclerViewAdapter.removePressedPosition();
             mRecyclerViewAdapter.notifyDataSetChanged();
-            Log.d("myLogs", "hide");
         }
     }
 

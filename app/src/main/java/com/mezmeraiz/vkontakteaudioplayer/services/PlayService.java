@@ -16,7 +16,6 @@ import com.mezmeraiz.vkontakteaudioplayer.Player;
 import com.mezmeraiz.vkontakteaudioplayer.R;
 import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
-
 import java.util.Map;
 
 

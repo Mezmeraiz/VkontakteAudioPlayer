@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.view.View;
 import android.widget.RemoteViews;
 import com.mezmeraiz.vkontakteaudioplayer.services.PlayService;
 import com.mezmeraiz.vkontakteaudioplayer.ui.MainActivity;
@@ -21,6 +22,7 @@ public class PlayWidget extends AppWidgetProvider {
     public static final String ARTIST_KEY = "ARTIST_KEY";
     public static final String TITLE_KEY = "TITLE_KEY";
     public static final String PLAY_STATE_KEY = "PLAY_STATE_KEY";
+    public static final String VISIBILITY_KEY = "VISIBILITY_KEY";
     public final static String WIDGET_PREF = "WIDGET_PREF";
     public final static String DESTROY_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.DESTROY_WIDGET_ACTION";
     public final static String CLICK_WIDGET_ACTION = "com.mezmeraiz.vkontakteaudioplayer.CLICK_WIDGET_ACTION";
@@ -38,7 +40,6 @@ public class PlayWidget extends AppWidgetProvider {
         }
     }
 
-
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
         // Установка на виджет данных о проигрываемой композиции
@@ -49,6 +50,9 @@ public class PlayWidget extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.imageViewWidgetNext, createPendingIntent(context, NEXT_BUTTON_KEY));
         views.setTextViewText(R.id.textViewTitle, sharedPreferences.getString(TITLE_KEY, ""));
         views.setTextViewText(R.id.textViewArtist, sharedPreferences.getString(ARTIST_KEY, ""));
+        views.setViewVisibility(R.id.imageViewWidgetNext, sharedPreferences.getInt(VISIBILITY_KEY, 0));
+        views.setViewVisibility(R.id.imageViewWidgetPlay, sharedPreferences.getInt(VISIBILITY_KEY, 0));
+        views.setViewVisibility(R.id.imageViewWidgetPrev, sharedPreferences.getInt(VISIBILITY_KEY, 0));
         if(sharedPreferences.getBoolean(PLAY_STATE_KEY, false)){
             views.setImageViewResource(R.id.imageViewWidgetPlay, R.drawable.widget_pause);
         }else{
@@ -69,6 +73,7 @@ public class PlayWidget extends AppWidgetProvider {
                 mEditor.putString(ARTIST_KEY, intent.getStringExtra(Player.ARTIST_KEY));
                 mEditor.putInt(DURATION_KEY, intent.getIntExtra(Player.DURATION_KEY, 0));
                 mEditor.putInt(PROGRESS_KEY, intent.getIntExtra(Player.PROGRESS_KEY, 0));
+                mEditor.putInt(VISIBILITY_KEY, View.VISIBLE);
                 mEditor.putBoolean(PLAY_STATE_KEY, intent.getBooleanExtra(Player.PLAY_STATE_KEY, false));
                 mEditor.commit();
                 updateWidgets(context);
@@ -85,6 +90,7 @@ public class PlayWidget extends AppWidgetProvider {
                 mEditor.putString(ARTIST_KEY, "");
                 mEditor.putInt(DURATION_KEY, 0);
                 mEditor.putInt(PROGRESS_KEY, 0);
+                mEditor.putInt(VISIBILITY_KEY, View.INVISIBLE);
                 mEditor.putBoolean(PLAY_STATE_KEY, false);
                 mEditor.commit();
                 updateWidgets(context);

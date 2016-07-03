@@ -30,8 +30,6 @@ public class DBHelper extends SQLiteOpenHelper{
             AudioHolder.URL + " text," +
             AudioHolder.PROGRESS + " integer);";
 
-    //private static final String c = "CREATE TABLE SongTable(id text,title text,artist text,path text,duration text,the_order integer);";
-    //private static final String c = "CREATE TABLE SongTable(id text,path text,progress integer);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

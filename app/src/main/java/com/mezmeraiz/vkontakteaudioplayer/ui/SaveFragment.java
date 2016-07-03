@@ -17,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.DownloadListener;
@@ -28,7 +27,6 @@ import com.mezmeraiz.vkontakteaudioplayer.adapters.RecyclerViewAdapter;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.loaders.SaveFragmentCursorLoader;
 import com.mezmeraiz.vkontakteaudioplayer.services.DownloadService;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -49,7 +47,6 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
     private Context mContext;
     public DownloadListener mDownloadListener;
     private final int SAVE_FRAGMENT_CURSOR_LOADER = 0;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -216,7 +213,6 @@ public class SaveFragment extends Fragment implements LoaderManager.LoaderCallba
             mRecyclerViewAdapter.notifyDataSetChanged();
         }
     }
-
 
     @Override
     public void scrollToPosition(int position) {

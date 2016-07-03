@@ -3,7 +3,6 @@ package com.mezmeraiz.vkontakteaudioplayer.loaders;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.CursorLoader;
-
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.mezmeraiz.vkontakteaudioplayer.db.DB;
 import com.mezmeraiz.vkontakteaudioplayer.db.DBHelper;

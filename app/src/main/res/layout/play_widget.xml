@@ -22,8 +22,7 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:gravity="center"
-            android:layout_marginTop="20dp">
+            android:gravity="center">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -32,7 +31,8 @@
                 android:id="@+id/textViewTitle"
                 android:gravity="center"
                 android:textColor="#fff"
-                android:alpha="1" />
+                android:alpha="1"
+                android:text="Empty Eyses" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -40,7 +40,8 @@
                 android:textSize="16sp"
                 android:id="@+id/textViewArtist"
                 android:textColor="#fff"
-                android:alpha="1" />
+                android:alpha="1"
+                android:text="Tralalalalala" />
         </LinearLayout>
 
         <LinearLayout

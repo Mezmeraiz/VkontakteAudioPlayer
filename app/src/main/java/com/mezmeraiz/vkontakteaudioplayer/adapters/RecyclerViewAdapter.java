@@ -52,8 +52,6 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
     private int mPressedColor;
     private int mUnPressedColor;
 
-    //private final int mGreyColor = Color.parseColor(mContext.getResources().get)
-    //private final int mWhiteColor = R.color.primaryColorLight;
 
     public RecyclerViewAdapter(List<Map<String, String>> itemList, Activity activity, DownloadListener downloadListener, int currentFragment) {
         setHasStableIds(true);
@@ -121,8 +119,10 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
         pressMenuFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Toast.makeText(mContext, "Сохранение возможно только в PRO версии приложения", Toast.LENGTH_SHORT).show();
                 v.setTag(i);
                 mDownloadListener.onClickDownload(v);
+
             }
         });
         // Ставим иконки в зависимости от типа Фрагмента и наличия в сохраненных

@@ -58,7 +58,6 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
     private DownloadListener mPopupMenuListener;
     private MainActivity mMainActivity;
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -181,7 +180,6 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         });
     }
 
-
     @Override
     public void onDestroyOptionsMenu() {
         super.onDestroyOptionsMenu();
@@ -247,6 +245,5 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
         mRecyclerView.setAdapter(mWrappedAdapter);
         mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
     }
-
 
 }

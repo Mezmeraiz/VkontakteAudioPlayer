@@ -15,7 +15,6 @@ import java.util.TimerTask;
  */
 public class Player implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
 
-
     public static final String START_PLAYING_ACTION = "com.mezmeraiz.vkontakteaudioplayer.START_PLAYING_ACTION";// Информирование MainActivity и текущего фрагмента о начале проигрывания новой композиции
     public static final String FAB_PRESSED_BACK_ACTION = "com.mezmeraiz.vkontakteaudioplayer.FAB_PRESSED_BACK_ACTION";//Информирование MainActivity для смены значка fab
     public static final String SEEKBAR_PROGRESS_ACTION = "com.mezmeraiz.vkontakteaudioplayer.SEEKBAR_PROGRESS_ACTION";//Информирование MainActivity для смены прогресса SeekBar

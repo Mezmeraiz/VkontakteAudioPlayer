@@ -3,7 +3,6 @@ package com.mezmeraiz.vkontakteaudioplayer.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-
 import com.mezmeraiz.vkontakteaudioplayer.AudioHolder;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKScope;
