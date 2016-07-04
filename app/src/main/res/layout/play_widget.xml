@@ -31,8 +31,7 @@
                 android:id="@+id/textViewTitle"
                 android:gravity="center"
                 android:textColor="#fff"
-                android:alpha="1"
-                android:text="Empty Eyses" />
+                android:alpha="1" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -40,8 +39,7 @@
                 android:textSize="16sp"
                 android:id="@+id/textViewArtist"
                 android:textColor="#fff"
-                android:alpha="1"
-                android:text="Tralalalalala" />
+                android:alpha="1" />
         </LinearLayout>
 
         <LinearLayout
@@ -54,7 +52,8 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:id="@+id/imageViewWidgetPrev"
-                android:background="@drawable/widget_prev" />
+                android:background="@drawable/widget_prev"
+                android:visibility="invisible" />
 
             <ImageView
                 android:layout_width="80dp"
@@ -63,13 +62,15 @@
 
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:src="@drawable/widget_play" />
+                android:src="@drawable/widget_play"
+                android:visibility="invisible" />
 
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:id="@+id/imageViewWidgetNext"
-                android:background="@drawable/widget_next" />
+                android:background="@drawable/widget_next"
+                android:visibility="invisible" />
         </LinearLayout>
 
     </LinearLayout>

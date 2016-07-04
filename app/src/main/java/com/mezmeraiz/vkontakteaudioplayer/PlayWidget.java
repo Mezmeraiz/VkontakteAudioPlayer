@@ -50,9 +50,9 @@ public class PlayWidget extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.imageViewWidgetNext, createPendingIntent(context, NEXT_BUTTON_KEY));
         views.setTextViewText(R.id.textViewTitle, sharedPreferences.getString(TITLE_KEY, ""));
         views.setTextViewText(R.id.textViewArtist, sharedPreferences.getString(ARTIST_KEY, ""));
-        views.setViewVisibility(R.id.imageViewWidgetNext, sharedPreferences.getInt(VISIBILITY_KEY, 0));
-        views.setViewVisibility(R.id.imageViewWidgetPlay, sharedPreferences.getInt(VISIBILITY_KEY, 0));
-        views.setViewVisibility(R.id.imageViewWidgetPrev, sharedPreferences.getInt(VISIBILITY_KEY, 0));
+        views.setViewVisibility(R.id.imageViewWidgetNext, sharedPreferences.getInt(VISIBILITY_KEY, View.INVISIBLE));
+        views.setViewVisibility(R.id.imageViewWidgetPlay, sharedPreferences.getInt(VISIBILITY_KEY, View.INVISIBLE));
+        views.setViewVisibility(R.id.imageViewWidgetPrev, sharedPreferences.getInt(VISIBILITY_KEY, View.INVISIBLE));
         if(sharedPreferences.getBoolean(PLAY_STATE_KEY, false)){
             views.setImageViewResource(R.id.imageViewWidgetPlay, R.drawable.widget_pause);
         }else{
