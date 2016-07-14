@@ -153,17 +153,16 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 switch (position) {
                     case AudioHolder.AUDIO_FRAGMENT:
-                        mToolbar.setTitle("Мои аудиозаписи");
+                        mToolbar.setTitle(R.string.myAudios);
                         break;
                     case AudioHolder.SAVED_FRAGMENT:
-                        mToolbar.setTitle("Сохраненные");
+                        mToolbar.setTitle(R.string.saved);
                         break;
                     case AudioHolder.SEARCH_FRAGMENT:
                         mToolbar.setTitle("");
                         break;
                 }
             }
-
             @Override
             public void onPageScrollStateChanged(int state) {
 

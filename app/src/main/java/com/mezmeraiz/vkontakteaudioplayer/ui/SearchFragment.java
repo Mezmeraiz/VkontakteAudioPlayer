@@ -151,7 +151,7 @@ public class SearchFragment extends Fragment implements OnRestartActivityListene
     private void load(String query){
         if(mVKRequest != null)
             mVKRequest.cancel();
-        mVKRequest = new VKRequest("audio.search", VKParameters.from("q", query, "auto_complete", "1", "sort", "2", "search_own", "0", "count", "50"));
+        mVKRequest = new VKRequest("audio.search", VKParameters.from("q", query, "auto_complete", "1", "sort", "2", "search_own", "1", "count", "100"));
         mVKRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {

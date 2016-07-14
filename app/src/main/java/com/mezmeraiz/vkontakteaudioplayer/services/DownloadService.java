@@ -31,6 +31,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 /**
  * Created by pc on 22.06.2016.
  */
@@ -90,7 +94,8 @@ public class DownloadService extends Service{
                 mRemoteViews.setTextViewText(R.id.textViewArtistDownloadNotif, mArtist);
                 startForeground(DOWNLOAD_NOTIFICATION_ID, mNotification);
             }
-            new AsyncLoader().execute();
+            //new AsyncLoader().execute();
+            createObservable();
         }else{
             stopSelf();
         }
@@ -111,7 +116,7 @@ public class DownloadService extends Service{
                 .setOngoing(true)
                 .build();
     }
-
+/*
     class AsyncLoader extends AsyncTask<Void,Void,String> {
 
         @Override
@@ -141,7 +146,7 @@ public class DownloadService extends Service{
             checkDatabase();
         }
     }
-
+*/
     private  String loadRequest(){
         // Загрузка аудиозаписи
         File newSong;
@@ -206,5 +211,29 @@ public class DownloadService extends Service{
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver);
+    }
+
+    private void createObservable(){
+        Observable.create(subscriber -> {
+            subscriber.onNext(loadRequest());
+            subscriber.onCompleted();
+        })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(songPath ->{
+            DB.getInstance().open(getApplicationContext()).deleteDownloadRow(mId);
+            if(mDownloadState){
+                Intent intent = new Intent(END_DOWNLOAD_ACTION);
+                intent.putExtra(AudioHolder.ID, mId);
+                intent.putExtra(AudioHolder.ARTIST, mArtist);
+                intent.putExtra(AudioHolder.TITLE, mTitle);
+                intent.putExtra(AudioHolder.PATH, (String)songPath);
+                intent.putExtra(AudioHolder.DURATION, mDuration);
+                sendBroadcast(intent);
+            }else{
+                sendBroadcast(new Intent(UPDATE_PROGRESS_ACTION));
+            }
+            checkDatabase();
+        });
     }
 }

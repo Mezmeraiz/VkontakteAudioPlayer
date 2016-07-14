@@ -5,4 +5,6 @@
     <string name="action_change_color">Изменить цвет</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="myAudios">Мои аудиозаписи</string>
+    <string name="saved">Сохраненные</string>
 </resources>
